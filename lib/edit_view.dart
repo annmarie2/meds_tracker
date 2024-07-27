@@ -16,8 +16,10 @@ class EditView extends StatelessWidget {
       appBar: AppBar(
         title: Text('Edit Medication'),
       ),
-      body: Center(
-        child: Text('Editing ${med.name}'),
+      body: Column(
+        children: [
+          
+        ],
       ),
     );
   }

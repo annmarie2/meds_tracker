@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'med_list_tile.dart';
 import 'edit_view.dart';
 import 'models/medication.dart';
+import 'details_view.dart';
 
 void main() {
   runApp(MainApp());
@@ -52,19 +53,30 @@ class HomePage extends StatelessWidget {
       body: ListView(
         children: [
           for (var med in appState.meds)
-            MedListTile(
-              name: med.name,
-              lastTriggered: DateTime.now(),
-              interval: Duration(days: 1),
-              onEdit: () {
-                // Handle edit button press
+            GestureDetector(
+              onTap: () {
+                // Handle list tile press
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (context) => EditView(med: med),
+                    builder: (context) => DetailsView(med: med),
                   ),
                 );
-              }
+              },
+              child: MedListTile(
+                name: med.name,
+                lastTriggered: DateTime.now(),
+                interval: Duration(days: 1),
+                onEdit: () {
+                  // Handle edit button press
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => EditView(med: med),
+                    ),
+                  );
+                }
+              ),
             ),
         ]
       ),
