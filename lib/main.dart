@@ -68,6 +68,14 @@ class HomePage extends StatelessWidget {
             ),
         ]
       ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          // Handle add button press,
+        },
+        child: Icon(Icons.add),
+        shape: CircleBorder(),
+        // TODO: Add background color based on theme :)
+      ),
     );
   }
 }
