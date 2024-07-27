@@ -53,30 +53,19 @@ class HomePage extends StatelessWidget {
       body: ListView(
         children: [
           for (var med in appState.meds)
-            GestureDetector(
-              onTap: () {
-                // Handle list tile press
+            MedListTile(
+              name: med.name,
+              lastTriggered: DateTime.now(),
+              interval: Duration(days: 1),
+              onEdit: () {
+                // Handle edit button press
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (context) => DetailsView(med: med),
+                    builder: (context) => EditView(med: med),
                   ),
                 );
-              },
-              child: MedListTile(
-                name: med.name,
-                lastTriggered: DateTime.now(),
-                interval: Duration(days: 1),
-                onEdit: () {
-                  // Handle edit button press
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => EditView(med: med),
-                    ),
-                  );
-                }
-              ),
+              }
             ),
         ]
       ),
