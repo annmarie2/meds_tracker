@@ -45,24 +45,29 @@ class HomePage extends StatelessWidget {
       );
     }
 
-    return ListView(
-      children: [
-        for (var med in appState.meds)
-          MedListTile(
-            name: med.name,
-            lastTriggered: DateTime.now(),
-            interval: Duration(days: 1),
-            onEdit: () {
-              // Handle edit button press
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => EditView(med: med),
-                ),
-              );
-            }
-          ),
-      ]
+    return Scaffold(
+            appBar: AppBar(
+        title: Text('Medications'),
+      ),
+      body: ListView(
+        children: [
+          for (var med in appState.meds)
+            MedListTile(
+              name: med.name,
+              lastTriggered: DateTime.now(),
+              interval: Duration(days: 1),
+              onEdit: () {
+                // Handle edit button press
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => EditView(med: med),
+                  ),
+                );
+              }
+            ),
+        ]
+      ),
     );
   }
 }

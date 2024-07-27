@@ -12,8 +12,8 @@ class MedListTile extends StatelessWidget {
   Widget build(BuildContext context) {
     return ListTile(
       title: Text(name),
-      subtitle: Text('Dosage: '),
-      trailing: IconButton(
+      subtitle: Text('Next Dose: '), // TODO: Calculate when the next dose will be and display it here
+      leading: IconButton(
         icon: Icon(Icons.edit),
         onPressed: onEdit,
       ),
