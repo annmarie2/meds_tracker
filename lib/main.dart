@@ -31,7 +31,7 @@ class MainApp extends StatelessWidget {
 class MainAppState extends ChangeNotifier {
   // TODO: Change this to a persisted list, instead of a hardcoded one
   var meds = <Medication>[
-    Medication(name: "Tylenol", lastTriggered: DateTime.now(), interval: Duration(days: 1), doAlarm: false),
+    Medication(name: "Tylenol", lastTriggered: DateTime.now(), interval: Duration(days: 1), doAlarm: true),
   ];
 }
 
