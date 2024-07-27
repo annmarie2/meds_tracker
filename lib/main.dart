@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'med_list_tile.dart';
+import 'edit_view.dart';
+import 'models/medication.dart';
+import 'details_view.dart';
 
 void main() {
   runApp(MainApp());
@@ -25,7 +29,10 @@ class MainApp extends StatelessWidget {
 }
 
 class MainAppState extends ChangeNotifier {
-  var meds = <String>["Tylenon", "Retinol", "opioids"];
+  // TODO: Change this to a persisted list, instead of a hardcoded one
+  var meds = <Medication>[
+    Medication(name: "Tylenol", lastTriggered: DateTime.now(), interval: Duration(days: 1), doAlarm: false),
+  ];
 }
 
 class HomePage extends StatelessWidget {
@@ -33,19 +40,53 @@ class HomePage extends StatelessWidget {
   Widget build(BuildContext context) {
     var appState = context.watch<MainAppState>();
 
+    if (appState.meds.isEmpty) {
+      return Center(
+        child: Text('No medications yet.'),
+      );
+    }
+
     return Scaffold(
-      body: ListView.builder(
-        itemCount: appState.meds.length,
-        itemBuilder: (context, index) {
-          return GestureDetector(
-            onTap: () => {
-              // Navigator.push(),
-            },
-            child: ListTile(
-              title: Text(appState.meds[index]),
+            appBar: AppBar(
+        title: Text('Medications'),
+      ),
+      body: ListView(
+        children: [
+          for (var med in appState.meds)
+            GestureDetector(
+              onTap: () {
+                // Handle list tile press
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => DetailsView(med: med),
+                  ),
+                );
+              },
+              child: MedListTile(
+                name: med.name,
+                lastTriggered: DateTime.now(),
+                interval: Duration(days: 1),
+                onEdit: () {
+                  // Handle edit button press
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => EditView(med: med),
+                    ),
+                  );
+                }
+              ),
             ),
-          );
-        }
+        ]
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          // Handle add button press,
+        },
+        child: Icon(Icons.add),
+        shape: CircleBorder(),
+        // TODO: Add background color based on theme :)
       ),
     );
   }
