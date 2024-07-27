@@ -47,16 +47,14 @@ class HomePage extends StatelessWidget {
     }
 
     return Scaffold(
-            appBar: AppBar(
+      appBar: AppBar(
         title: Text('Medications'),
       ),
       body: ListView(
         children: [
           for (var med in appState.meds)
             MedListTile(
-              name: med.name,
-              lastTriggered: DateTime.now(),
-              interval: Duration(days: 1),
+              med: med,
               onEdit: () {
                 // Handle edit button press
                 Navigator.push(
