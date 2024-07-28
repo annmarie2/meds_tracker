@@ -1,3 +1,5 @@
+import 'package:flutter/material.dart';
+
 class Medication {
   final String name;
   final DateTime lastTriggered;
@@ -18,7 +20,31 @@ class Medication {
       name: json['name'],
       lastTriggered: DateTime.parse(json['lastTriggered']),
       interval: Duration(minutes: json['interval']),
-      doAlarm: json['alarm'],
+      doAlarm: json['doAlarm'] ?? false, // Default to false if null
     );
+  }
+}
+
+class MedicationProvider with ChangeNotifier {
+  List<Medication> _medications = [];
+
+  List<Medication> get medications => _medications;
+
+  void setMedications(List<Medication> meds) {
+    _medications = meds;
+    notifyListeners();
+  }
+
+  void addMedication(Medication med) {
+    _medications.add(med);
+    notifyListeners();
+  }
+
+  void updateMedication(Medication med) {
+    int index = _medications.indexWhere((m) => m.name == med.name);
+    if (index != -1) {
+      _medications[index] = med;
+      notifyListeners();
+    }
   }
 }

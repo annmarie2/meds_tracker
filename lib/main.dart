@@ -40,14 +40,14 @@ class MainAppState extends ChangeNotifier {
 
   Future<void> _loadMeds() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    String? medsJson = prefs.getString('medication');
+    String? medsJson = prefs.getString('medications');
     if (medsJson != null) {
       List<dynamic> medsList = jsonDecode(medsJson);
       meds = medsList.map((med) => Medication.fromJson(med)).toList();
     } else {
       // Default value if no data is found
       meds = [
-        Medication(name: "Tylenol", lastTriggered: DateTime.now(), interval: Duration(days: 1), doAlarm: true),
+        // Medication(name: "Tylenol", lastTriggered: DateTime.now(), interval: Duration(days: 1), doAlarm: true),
       ];
     }
     notifyListeners();

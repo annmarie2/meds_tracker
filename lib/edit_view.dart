@@ -46,8 +46,22 @@ class _EditViewState extends State<EditView> {
       });
 
       SharedPreferences prefs = await SharedPreferences.getInstance();
-      String medJson = jsonEncode(widget.med.toJson());
-      await prefs.setString('medication', medJson);
+      String? medsJson = prefs.getString('medications');
+      List<dynamic> medsList = medsJson != null ? jsonDecode(medsJson) : [];
+
+      // Find the index of the existing medication
+      int index = medsList.indexWhere((med) => med['name'] == widget.med.name);
+
+      if (index != -1) {
+        // Replace the existing medication
+        medsList[index] = widget.med.toJson();
+      } else {
+        // Add the new medication if it doesn't exist
+        medsList.add(widget.med.toJson());
+      }
+
+      // medsList.add(widget.med.toJson());
+      await prefs.setString('medications', jsonEncode(medsList));
     }
   }
 
