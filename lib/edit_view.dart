@@ -63,9 +63,29 @@ class _EditViewState extends State<EditView> {
         medsList.add(widget.med.toJson());
       }
 
-      // medsList.add(widget.med.toJson());
       await prefs.setString('medications', jsonEncode(medsList));
+      Navigator.pop(context);
     }
+  }
+
+  Future<void> _delete() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String? medsJson = prefs.getString('medications');
+    List<dynamic> medsList = medsJson != null ? jsonDecode(medsJson) : [];
+
+    // Find the index of the existing medication
+    // TODO: THIS IS ALWAYS RETURNING 0. WHY?
+    int index = medsList.indexWhere((med) => med['name'] == widget.med.name);
+    print("index is $index");
+
+    // If the medication exists, delete it
+    if (index != -1) {
+      // Delete the existing medication
+      medsList.removeAt(index);
+    }
+
+    await prefs.setString('medications', jsonEncode(medsList));
+    Navigator.pop(context);
   }
 
   @override 
@@ -147,10 +167,7 @@ class _EditViewState extends State<EditView> {
                 child: Text('Save'),
               ),
               ElevatedButton(
-                onPressed: () {
-                  // TODO: Handle the delete button press
-                  
-                },
+                onPressed: _delete,
                 child: Text('Delete'),
               ),
             ],
