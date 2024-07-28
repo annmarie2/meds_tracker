@@ -7,7 +7,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
 
 class EditView extends StatefulWidget {
-  Medication med;
+  Medication? med;
 
   EditView({required this.med});
 
@@ -23,12 +23,15 @@ class _EditViewState extends State<EditView> {
   @override
   void initState() {
     super.initState();
+
+    // widget.med = widget.med ?? Medication(name: 'New Medication', lastTriggered: DateTime.now(), interval: Duration.zero, doAlarm: false);
+
     _durationController = TextEditingController(
-      text: (widget.med.interval.inMinutes / 60).toStringAsFixed(2),
+      text: (widget.med?.interval.inMinutes ?? 60 / 60).toStringAsFixed(2),
     );
-    _alarm = widget.med.doAlarm;
+    _alarm = widget.med?.doAlarm ?? false;
     _lastTriggeredController = TextEditingController(
-      text: DateFormat('MMMM d, yyyy - h:mm a').format(widget.med.lastTriggered),
+      text: DateFormat('MMMM d, yyyy - h:mm a').format(widget.med?.lastTriggered ?? DateTime.now()),
     );
   }
 
@@ -39,7 +42,7 @@ class _EditViewState extends State<EditView> {
     if (hours != null) {
       setState(() {
         widget.med = Medication(
-          name: widget.med.name,
+          name: widget.med?.name ?? 'New Medication', // TODO: CHANGE THIS TO A NAME CONTROLLER
           lastTriggered: lastTriggered,
           interval: Duration(minutes: (hours * 60).toInt()),
           doAlarm: _alarm,
@@ -51,15 +54,15 @@ class _EditViewState extends State<EditView> {
       List<dynamic> medsList = medsJson != null ? jsonDecode(medsJson) : [];
 
       // Find the index of the existing medication
-      int index = medsList.indexWhere((med) => med['name'] == widget.med.name);
+      int index = medsList.indexWhere((med) => med['name'] == widget.med?.name);
       print("index is $index");
 
       if (index != -1) {
         // Replace the existing medication
-        medsList[index] = widget.med.toJson();
+        medsList[index] = widget.med?.toJson();
       } else {
         // Add the new medication if it doesn't exist
-        medsList.add(widget.med.toJson());
+        medsList.add(widget.med?.toJson());
       }
 
       await prefs.setString('medications', jsonEncode(medsList));
@@ -74,7 +77,7 @@ class _EditViewState extends State<EditView> {
     List<dynamic> medsList = medsJson != null ? jsonDecode(medsJson) : [];
 
     // Find the index of the existing medication
-    int index = medsList.indexWhere((med) => med['name'] == widget.med.name);
+    int index = medsList.indexWhere((med) => med['name'] == widget.med?.name);
 
     // If the medication exists, delete it
     if (index != -1) {
@@ -96,7 +99,7 @@ class _EditViewState extends State<EditView> {
       body: Column(
         children: [
           Text(
-            '${widget.med.name}',
+            '${widget.med?.name ?? 'New Medication'}',
             style: TextStyle(
               fontSize: 24.0,
             ),

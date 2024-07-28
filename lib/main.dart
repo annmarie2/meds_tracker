@@ -103,7 +103,12 @@ class _HomePageState extends State<HomePage> {
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
-          // Handle add button press,
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => EditView(med: null),
+            ),
+          );
         },
         child: Icon(Icons.add),
         shape: CircleBorder(),
