@@ -4,6 +4,8 @@ import 'med_list_tile.dart';
 import 'edit_view.dart';
 import 'models/medication.dart';
 import 'details_view.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'dart:convert';
 
 void main() {
   runApp(MainApp());
@@ -30,9 +32,26 @@ class MainApp extends StatelessWidget {
 
 class MainAppState extends ChangeNotifier {
   // TODO: Change this to a persisted list, instead of a hardcoded one
-  var meds = <Medication>[
-    Medication(name: "Tylenol", lastTriggered: DateTime.now(), interval: Duration(days: 1), doAlarm: true),
-  ];
+  var meds = <Medication>[];
+
+  MainAppState() {
+    _loadMeds();
+  }
+
+  Future<void> _loadMeds() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String? medsJson = prefs.getString('medication');
+    if (medsJson != null) {
+      List<dynamic> medsList = jsonDecode(medsJson);
+      meds = medsList.map((med) => Medication.fromJson(med)).toList();
+    } else {
+      // Default value if no data is found
+      meds = [
+        Medication(name: "Tylenol", lastTriggered: DateTime.now(), interval: Duration(days: 1), doAlarm: true),
+      ];
+    }
+    notifyListeners();
+  }
 }
 
 class HomePage extends StatelessWidget {
