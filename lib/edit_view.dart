@@ -6,15 +6,54 @@ import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
 
-class EditView extends StatelessWidget {
+class EditView extends StatefulWidget {
   Medication med;
 
   EditView({required this.med});
 
+  @override
+  State<EditView> createState() => _EditViewState();
+}
+
+class _EditViewState extends State<EditView> {
+  late TextEditingController _durationController;
+  late bool _alarm;
+  late TextEditingController _lastTriggeredController;
+
+  @override
+  void initState() {
+    super.initState();
+    _durationController = TextEditingController(
+      text: (widget.med.interval.inMinutes / 60).toStringAsFixed(2),
+    );
+    _alarm = widget.med.doAlarm;
+    _lastTriggeredController = TextEditingController(
+      text: DateFormat('MMMM d, yyyy - h:mm a').format(widget.med.lastTriggered),
+    );
+  }
+
+  Future<void> _save() async {
+    double? hours = double.tryParse(_durationController.text);
+
+    if (hours != null) {
+      setState(() {
+        widget.med = Medication(
+          name: widget.med.name,
+          lastTriggered: widget.med.lastTriggered,
+          interval: Duration(minutes: (hours * 60).toInt()),
+          doAlarm: _alarm,
+          );
+      });
+
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      String medJson = jsonEncode(widget.med.toJson());
+      await prefs.setString('medication', medJson);
+    }
+  }
+
   @override 
   Widget build(BuildContext context) {
-    var appState = context.watch<MainAppState>();
-
+    // var appState = context.watch<MainAppState>();
     return Scaffold(
       appBar: AppBar(
         title: Text('Edit Medication'),
@@ -22,7 +61,7 @@ class EditView extends StatelessWidget {
       body: Column(
         children: [
           Text(
-            '${med.name}',
+            '${widget.med.name}',
             style: TextStyle(
               fontSize: 24.0,
             ),
@@ -35,7 +74,7 @@ class EditView extends StatelessWidget {
               SizedBox(width: 10), // Add some space between the text and the input field
               IntrinsicWidth(
                 child: TextFormField(
-                  initialValue: (med.interval.inMinutes / 60).toStringAsFixed(2), // Display the interval in hours up to the hundredths decimal place
+                  controller: _durationController,
                   decoration: InputDecoration(
                     border: OutlineInputBorder(),
                   ),
@@ -55,7 +94,8 @@ class EditView extends StatelessWidget {
               SizedBox(width: 10),
               IntrinsicWidth(
                 child: TextFormField(
-                  initialValue: DateFormat('MMMM d, yyyy - h:mm a').format(med.lastTriggered), // Display the time in a human-readable format                  
+                  controller: _lastTriggeredController,
+                  // initialValue: DateFormat('MMMM d, yyyy - h:mm a').format(widget.med.lastTriggered), // Display the time in a human-readable format                  
                   decoration: InputDecoration(
                     border: OutlineInputBorder(),
                   ),
@@ -72,9 +112,12 @@ class EditView extends StatelessWidget {
               Text('Alarm: '),
               SizedBox(width: 10),
               Checkbox(
-                value: med.doAlarm,
-                onChanged: (value) {
+                value: _alarm,
+                onChanged: (bool? value) {
                   // TODO: Handle changes to the checkbox if necessary
+                  setState(() {
+                    _alarm = value ?? false;
+                  });
                 },
               ),
             ],
@@ -83,16 +126,13 @@ class EditView extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               ElevatedButton(
-                onPressed: () {
-                  // TODO: Handle the save button press
-                  // TODO: Take input from fields, if valid, turn into a new Medication object and replace the old one
-
-                },
+                onPressed: _save,
                 child: Text('Save'),
               ),
               ElevatedButton(
                 onPressed: () {
                   // TODO: Handle the delete button press
+                  
                 },
                 child: Text('Delete'),
               ),
