@@ -75,32 +75,37 @@ class _HomePageState extends State<HomePage> {
   Widget build(BuildContext context) {
     var appState = context.watch<MainAppState>();
 
-    if (appState.meds.isEmpty) {
-      return Center(
-        child: Text('No medications yet.'),
-      );
-    }
+    // if (appState.meds.isEmpty) {
+    //   return Center(
+    //     child: Text('No medications yet.'),
+    //   );
+    // }
 
     return Scaffold(
       appBar: AppBar(
         title: Text('Medications'),
       ),
-      body: ListView(
-        children: [
-          for (var med in appState.meds)
-            MedListTile(
-              med: med,
-              onEdit: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => EditView(med: med),
-                  ),
-                );
-              }
-            ),
+body: ListView(
+  children: appState.meds.isEmpty
+      ? [
+          Center(
+            child: Text('No medications yet.'),
+          ),
         ]
-      ),
+      : appState.meds.map((med) {
+          return MedListTile(
+            med: med,
+            onEdit: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => EditView(med: med),
+                ),
+              );
+            },
+          );
+        }).toList(),
+      ),      
       floatingActionButton: FloatingActionButton(
         onPressed: () {
           Navigator.push(
