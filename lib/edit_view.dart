@@ -34,12 +34,13 @@ class _EditViewState extends State<EditView> {
 
   Future<void> _save() async {
     double? hours = double.tryParse(_durationController.text);
+    DateTime? lastTriggered = DateFormat('MMMM d, yyyy - h:mm a').parse(_lastTriggeredController.text);
 
     if (hours != null) {
       setState(() {
         widget.med = Medication(
           name: widget.med.name,
-          lastTriggered: widget.med.lastTriggered,
+          lastTriggered: lastTriggered,
           interval: Duration(minutes: (hours * 60).toInt()),
           doAlarm: _alarm,
           );
