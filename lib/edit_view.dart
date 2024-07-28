@@ -51,7 +51,6 @@ class _EditViewState extends State<EditView> {
       List<dynamic> medsList = medsJson != null ? jsonDecode(medsJson) : [];
 
       // Find the index of the existing medication
-      // TODO: THIS IS ALWAYS RETURNING 0. WHY?
       int index = medsList.indexWhere((med) => med['name'] == widget.med.name);
       print("index is $index");
 
@@ -70,13 +69,12 @@ class _EditViewState extends State<EditView> {
 
   Future<void> _delete() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
+    print("prefs is: $prefs");
     String? medsJson = prefs.getString('medications');
     List<dynamic> medsList = medsJson != null ? jsonDecode(medsJson) : [];
 
     // Find the index of the existing medication
-    // TODO: THIS IS ALWAYS RETURNING 0. WHY?
     int index = medsList.indexWhere((med) => med['name'] == widget.med.name);
-    print("index is $index");
 
     // If the medication exists, delete it
     if (index != -1) {
