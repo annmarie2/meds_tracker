@@ -19,15 +19,17 @@ class _EditViewState extends State<EditView> {
   late TextEditingController _durationController;
   late bool _alarm;
   late TextEditingController _lastTriggeredController;
+  late TextEditingController _nameController;
 
   @override
   void initState() {
     super.initState();
 
-    // widget.med = widget.med ?? Medication(name: 'New Medication', lastTriggered: DateTime.now(), interval: Duration.zero, doAlarm: false);
-
+    _nameController = TextEditingController(
+      text: widget.med?.name ?? 'New Medication',
+    );
     _durationController = TextEditingController(
-      text: (widget.med?.interval.inMinutes ?? 60 / 60).toStringAsFixed(2),
+      text: ((widget.med?.interval.inMinutes ?? 60) / 60).toStringAsFixed(2),
     );
     _alarm = widget.med?.doAlarm ?? false;
     _lastTriggeredController = TextEditingController(
@@ -38,11 +40,12 @@ class _EditViewState extends State<EditView> {
   Future<void> _save() async {
     double? hours = double.tryParse(_durationController.text);
     DateTime? lastTriggered = DateFormat('MMMM d, yyyy - h:mm a').parse(_lastTriggeredController.text);
+    String? name = _nameController.text;
 
     if (hours != null) {
       setState(() {
         widget.med = Medication(
-          name: widget.med?.name ?? 'New Medication', // TODO: CHANGE THIS TO A NAME CONTROLLER
+          name: name,
           lastTriggered: lastTriggered,
           interval: Duration(minutes: (hours * 60).toInt()),
           doAlarm: _alarm,
@@ -72,7 +75,6 @@ class _EditViewState extends State<EditView> {
 
   Future<void> _delete() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    print("prefs is: $prefs");
     String? medsJson = prefs.getString('medications');
     List<dynamic> medsList = medsJson != null ? jsonDecode(medsJson) : [];
 
@@ -98,10 +100,16 @@ class _EditViewState extends State<EditView> {
       ),
       body: Column(
         children: [
-          Text(
-            '${widget.med?.name ?? 'New Medication'}',
-            style: TextStyle(
-              fontSize: 24.0,
+          IntrinsicWidth(
+            child: TextFormField(
+              controller: _nameController,
+              decoration: InputDecoration(
+                border: OutlineInputBorder(),
+              ),
+              style: TextStyle(
+                fontSize: 24.0,
+              ),
+              onChanged: (value) {},
             ),
           ),
           SizedBox(height: 20),
@@ -116,9 +124,7 @@ class _EditViewState extends State<EditView> {
                   decoration: InputDecoration(
                     border: OutlineInputBorder(),
                   ),
-                  onChanged: (value) {
-                    // TODO: Handle changes to the input field if necessary
-                  },
+                  onChanged: (value) {},
                 ),
               ),
               SizedBox(width: 10),
