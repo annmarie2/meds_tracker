@@ -2,9 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:meds_tracker/main.dart';
 import 'package:provider/provider.dart';
 import 'models/medication.dart';
+import 'package:intl/intl.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'dart:convert';
 
 class EditView extends StatelessWidget {
-  final Medication med;
+  Medication med;
 
   EditView({required this.med});
 
@@ -18,7 +21,13 @@ class EditView extends StatelessWidget {
       ),
       body: Column(
         children: [
-          Text('${med.name}'),
+          Text(
+            '${med.name}',
+            style: TextStyle(
+              fontSize: 24.0,
+            ),
+          ),
+          SizedBox(height: 20),
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
@@ -26,7 +35,7 @@ class EditView extends StatelessWidget {
               SizedBox(width: 10), // Add some space between the text and the input field
               IntrinsicWidth(
                 child: TextFormField(
-                  initialValue: med.interval.toString(), // TODO: Display the interval in a human-readable format
+                  initialValue: (med.interval.inMinutes / 60).toStringAsFixed(2), // Display the interval in hours up to the hundredths decimal place
                   decoration: InputDecoration(
                     border: OutlineInputBorder(),
                   ),
@@ -35,7 +44,8 @@ class EditView extends StatelessWidget {
                   },
                 ),
               ),
-              // TODO: Add a dropdown to select the period (e.g. days, hours, minutes)
+              SizedBox(width: 10),
+              Text('hours'),
             ],
           ),
           Row(
@@ -45,7 +55,7 @@ class EditView extends StatelessWidget {
               SizedBox(width: 10),
               IntrinsicWidth(
                 child: TextFormField(
-                  initialValue: med.lastTriggered.toString(), // TODO: Display the time in a human-readable format
+                  initialValue: DateFormat('MMMM d, yyyy - h:mm a').format(med.lastTriggered), // Display the time in a human-readable format                  
                   decoration: InputDecoration(
                     border: OutlineInputBorder(),
                   ),
@@ -75,6 +85,8 @@ class EditView extends StatelessWidget {
               ElevatedButton(
                 onPressed: () {
                   // TODO: Handle the save button press
+                  // TODO: Take input from fields, if valid, turn into a new Medication object and replace the old one
+
                 },
                 child: Text('Save'),
               ),

@@ -56,7 +56,6 @@ class HomePage extends StatelessWidget {
             MedListTile(
               med: med,
               onEdit: () {
-                // Handle edit button press
                 Navigator.push(
                   context,
                   MaterialPageRoute(
