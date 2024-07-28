@@ -50,7 +50,9 @@ class _EditViewState extends State<EditView> {
       List<dynamic> medsList = medsJson != null ? jsonDecode(medsJson) : [];
 
       // Find the index of the existing medication
+      // TODO: THIS IS ALWAYS RETURNING 0. WHY?
       int index = medsList.indexWhere((med) => med['name'] == widget.med.name);
+      print("index is $index");
 
       if (index != -1) {
         // Replace the existing medication

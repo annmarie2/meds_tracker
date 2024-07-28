@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:provider/provider.dart';
 import 'med_list_tile.dart';
 import 'edit_view.dart';
@@ -8,7 +9,11 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
 
 void main() {
-  runApp(MainApp());
+  runApp(ChangeNotifierProvider(
+    create: (context) => MainAppState(),
+    child: MainApp(),
+    ),
+  );
 }
 
 class MainApp extends StatelessWidget {
@@ -54,7 +59,18 @@ class MainAppState extends ChangeNotifier {
   }
 }
 
-class HomePage extends StatelessWidget {
+class HomePage extends StatefulWidget {
+  @override
+  State<HomePage> createState() => _HomePageState();
+}
+
+class _HomePageState extends State<HomePage> {
+  @override 
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    Provider.of<MainAppState>(context, listen: false)._loadMeds();
+  }
+
   @override
   Widget build(BuildContext context) {
     var appState = context.watch<MainAppState>();
