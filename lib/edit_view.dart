@@ -41,6 +41,7 @@ class _EditViewState extends State<EditView> {
     double? hours = double.tryParse(_durationController.text);
     DateTime? lastTriggered = DateFormat('MMMM d, yyyy - h:mm a').parse(_lastTriggeredController.text);
     String? name = _nameController.text;
+    String? oldName = widget.med?.name;
 
     if (hours != null) {
       setState(() {
@@ -57,7 +58,7 @@ class _EditViewState extends State<EditView> {
       List<dynamic> medsList = medsJson != null ? jsonDecode(medsJson) : [];
 
       // Find the index of the existing medication
-      int index = medsList.indexWhere((med) => med['name'] == widget.med?.name);
+      int index = medsList.indexWhere((med) => med['name'] == oldName);
       print("index is $index");
 
       if (index != -1) {
