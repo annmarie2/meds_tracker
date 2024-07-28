@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'models/medication.dart';
+import 'package:intl/src/intl/date_format.dart';
+
 
 class MedListTile extends StatelessWidget {
   final Medication med;
@@ -33,7 +35,7 @@ class MedListTile extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(med.name),
-                Text('Next Dose: '), // TODO: Calculate when the next dose will be and display it here
+                Text('Next Dose: ${DateFormat('MMMM d, yyyy - h:mm a').format(med.lastTriggered.add(med.interval))}'), // TODO: Calculate when the next dose will be and display it here
               ],
             ),
           ],
