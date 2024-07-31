@@ -112,6 +112,10 @@ body: ListView(
                 ),
               );
             },
+            onTaken: () {
+              med.lastTriggered = DateTime.now();
+              appState.updateMedication(med, false);
+            },
           );
         }).toList(),
       ),      
