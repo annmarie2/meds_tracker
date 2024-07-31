@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 
 class Medication {
@@ -23,6 +24,17 @@ class Medication {
       doAlarm: json['doAlarm'] ?? false, // Default to false if null
     );
   }
+
+  // Optionally, convert a Medication instance to a JSON string
+  String toJsonString() {
+    return json.encode(toJson());
+  }
+
+  // Optionally, create a Medication instance from a JSON string
+  factory Medication.fromJsonString(String jsonString) {
+    return Medication.fromJson(json.decode(jsonString));
+  }
+
 }
 
 class MedicationProvider with ChangeNotifier {
