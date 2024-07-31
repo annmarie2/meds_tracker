@@ -43,6 +43,17 @@ class MainAppState extends ChangeNotifier {
     _loadMeds();
   }
 
+  void updateMedication(Medication med, bool delete) async {
+    bool isNew = meds.any((m) => identical(m, med));
+    if (isNew) {
+      meds.add(med);
+    }
+    if (delete) {
+      meds.remove(med);
+    }
+    await Persistence.saveData(meds);
+  }
+
   Future<void> _loadMeds() async {
     List<Medication> medsList = await Persistence.loadData();
     if (medsList.isNotEmpty) {
@@ -97,7 +108,7 @@ body: ListView(
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) => EditView(med: med),
+                  builder: (context) => EditView(med: med, onMedicationChanged: appState.updateMedication),
                 ),
               );
             },
@@ -109,7 +120,7 @@ body: ListView(
           Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (context) => EditView(med: null),
+              builder: (context) => EditView(med: null, onMedicationChanged: appState.updateMedication),
             ),
           );
         },

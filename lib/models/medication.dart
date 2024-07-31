@@ -2,10 +2,10 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 
 class Medication {
-  final String name;
-  final DateTime lastTriggered;
-  final Duration interval;
-  final bool doAlarm;
+  String name;
+  DateTime lastTriggered;
+  Duration interval;
+  bool doAlarm;
 
   Medication({required this.name, required this.lastTriggered, required this.interval, this.doAlarm = false});
 
@@ -36,6 +36,8 @@ class Medication {
   }
 
 }
+
+typedef MedicationCallback = void Function(Medication med, bool delete);
 
 class MedicationProvider with ChangeNotifier {
   List<Medication> _medications = [];

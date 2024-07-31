@@ -18,7 +18,7 @@ class DetailsView extends StatelessWidget {
       ),
       body: Column(
         children: [
-          Text('${med.name}'),
+          Text(med.name),
           Text('Next Dose:'),
           Text('[time of dose]'), // TODO: Calculate when the next dose will be and display it here (as a time, e.g. 3:00 PM)
           ElevatedButton(

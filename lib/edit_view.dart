@@ -8,8 +8,9 @@ import 'dart:convert';
 
 class EditView extends StatefulWidget {
   Medication? med;
+  MedicationCallback? onMedicationChanged;
 
-  EditView({required this.med});
+  EditView({required this.med, required this.onMedicationChanged});
 
   @override
   State<EditView> createState() => _EditViewState();
@@ -45,14 +46,22 @@ class _EditViewState extends State<EditView> {
 
     if (hours != null) {
       setState(() {
-        widget.med = Medication(
-          name: name,
-          lastTriggered: lastTriggered,
-          interval: Duration(minutes: (hours * 60).toInt()),
-          doAlarm: _alarm,
+        if (widget.med == null) {
+          widget.med = Medication(
+            name: name,
+            lastTriggered: lastTriggered,
+            interval: Duration(minutes: (hours * 60.0).toInt()),
+            doAlarm: _alarm,
           );
+        } else {
+          widget.med!.name = name;
+          widget.med!.lastTriggered = lastTriggered;
+          widget.med!.interval = Duration(minutes: (hours * 60.0).toInt());
+          widget.med!.doAlarm = _alarm;
+        }
+        widget.onMedicationChanged!(widget.med!, false);
       });
-
+/*
       List<Medication> medsList = await Persistence.loadData();
 
       // Find the index of the existing medication
@@ -68,11 +77,15 @@ class _EditViewState extends State<EditView> {
       }
 
       await Persistence.saveData(medsList);
+*/
       Navigator.pop(context);
     }
   }
 
   Future<void> _delete() async {
+
+    widget.onMedicationChanged!(widget.med!, true);
+    /*
     List<Medication> medsList = await Persistence.loadData();
 
     // Find the index of the existing medication
@@ -85,6 +98,7 @@ class _EditViewState extends State<EditView> {
     }
 
     await Persistence.saveData(medsList);
+    */
     Navigator.pop(context);
   }
 
