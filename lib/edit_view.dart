@@ -3,7 +3,7 @@ import 'package:meds_tracker/main.dart';
 import 'package:provider/provider.dart';
 import 'models/medication.dart';
 import 'package:intl/intl.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'access/persistence.dart';
 import 'dart:convert';
 
 class EditView extends StatefulWidget {
@@ -53,34 +53,30 @@ class _EditViewState extends State<EditView> {
           );
       });
 
-      SharedPreferences prefs = await SharedPreferences.getInstance();
-      String? medsJson = prefs.getString('medications');
-      List<dynamic> medsList = medsJson != null ? jsonDecode(medsJson) : [];
+      List<Medication> medsList = await Persistence.loadData();
 
       // Find the index of the existing medication
-      int index = medsList.indexWhere((med) => med['name'] == oldName);
+      int index = medsList.indexWhere((med) => med.name == oldName);
       print("index is $index");
 
       if (index != -1) {
         // Replace the existing medication
-        medsList[index] = widget.med?.toJson();
+        medsList[index] = widget.med!;
       } else {
         // Add the new medication if it doesn't exist
-        medsList.add(widget.med?.toJson());
+        medsList.add(widget.med!);
       }
 
-      await prefs.setString('medications', jsonEncode(medsList));
+      await Persistence.saveData(medsList);
       Navigator.pop(context);
     }
   }
 
   Future<void> _delete() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    String? medsJson = prefs.getString('medications');
-    List<dynamic> medsList = medsJson != null ? jsonDecode(medsJson) : [];
+    List<Medication> medsList = await Persistence.loadData();
 
     // Find the index of the existing medication
-    int index = medsList.indexWhere((med) => med['name'] == widget.med?.name);
+    int index = medsList.indexWhere((med) => med.name == widget.med?.name);
 
     // If the medication exists, delete it
     if (index != -1) {
@@ -88,7 +84,7 @@ class _EditViewState extends State<EditView> {
       medsList.removeAt(index);
     }
 
-    await prefs.setString('medications', jsonEncode(medsList));
+    await Persistence.saveData(medsList);
     Navigator.pop(context);
   }
 

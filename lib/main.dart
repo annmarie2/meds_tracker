@@ -5,7 +5,7 @@ import 'med_list_tile.dart';
 import 'edit_view.dart';
 import 'models/medication.dart';
 import 'details_view.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'access/persistence.dart';
 import 'dart:convert';
 
 void main() {
@@ -44,11 +44,9 @@ class MainAppState extends ChangeNotifier {
   }
 
   Future<void> _loadMeds() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    String? medsJson = prefs.getString('medications');
-    if (medsJson != null) {
-      List<dynamic> medsList = jsonDecode(medsJson);
-      meds = medsList.map((med) => Medication.fromJson(med)).toList();
+    List<Medication> medsList = await Persistence.loadData();
+    if (medsList.isNotEmpty) {
+      meds = medsList.map((med) => med).toList();
     } else {
       // Default value if no data is found
       meds = [
