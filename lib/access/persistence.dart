@@ -14,14 +14,6 @@ class Persistence {
     final List<String>? medicationsJson = prefs.getStringList('medications_v2');
     final List<Medication> medications = medicationsJson?.map((medJson) => Medication.fromJsonString(medJson)).toList() ?? [];
 
-    //Support for old versions of data
-    String? medsJson = prefs.getString('medications');
-    if (medsJson != null) {
-      List<dynamic> medsList = jsonDecode(medsJson);
-      var meds = medsList.map((med) => Medication.fromJson(med)).toList();
-      medications.addAll(meds);
-    }
-    
     return medications;
   }
 }
