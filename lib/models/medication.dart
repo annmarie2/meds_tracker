@@ -1,15 +1,20 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:uuid/uuid.dart';
 
 class Medication {
+  late final String id;
   String name;
   DateTime lastTriggered;
   Duration interval;
   bool doAlarm;
 
-  Medication({required this.name, required this.lastTriggered, required this.interval, this.doAlarm = false});
+  Medication({required this.name, required this.lastTriggered, required this.interval, this.doAlarm = false, String? id}) {
+    this.id = id ?? Uuid().v4();
+  }
 
   Map<String, dynamic> toJson() => {
+    'id': id,
     'name': name,
     'lastTriggered': lastTriggered.toIso8601String(),
     'interval': interval.inMinutes,
@@ -22,6 +27,7 @@ class Medication {
       lastTriggered: DateTime.parse(json['lastTriggered']),
       interval: Duration(minutes: json['interval']),
       doAlarm: json['doAlarm'] ?? false, // Default to false if null
+      id: json['id'] ?? Uuid().v4(),
     );
   }
 

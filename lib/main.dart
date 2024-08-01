@@ -44,12 +44,19 @@ class MainAppState extends ChangeNotifier {
   }
 
   void updateMedication(Medication med, bool delete) async {
-    bool isNew = meds.any((m) => identical(m, med));
+    bool isNew = !(meds.any((m) => m.id == med.id));
     if (isNew) {
       meds.add(med);
     }
+    else {
+      var x = meds.firstWhere((m) => m.id == med.id);
+      x.name = med.name;
+      x.lastTriggered = med.lastTriggered;
+      x.interval = med.interval;
+      x.doAlarm = med.doAlarm;
+    }
     if (delete) {
-      meds.remove(med);
+      meds.removeWhere((m) => m.id == med.id);
     }
     await Persistence.saveData(meds);
   }

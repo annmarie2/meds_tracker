@@ -61,23 +61,7 @@ class _EditViewState extends State<EditView> {
         }
         widget.onMedicationChanged!(widget.med!, false);
       });
-/*
-      List<Medication> medsList = await Persistence.loadData();
 
-      // Find the index of the existing medication
-      int index = medsList.indexWhere((med) => med.name == oldName);
-      print("index is $index");
-
-      if (index != -1) {
-        // Replace the existing medication
-        medsList[index] = widget.med!;
-      } else {
-        // Add the new medication if it doesn't exist
-        medsList.add(widget.med!);
-      }
-
-      await Persistence.saveData(medsList);
-*/
       Navigator.pop(context);
     }
   }
@@ -85,20 +69,7 @@ class _EditViewState extends State<EditView> {
   Future<void> _delete() async {
 
     widget.onMedicationChanged!(widget.med!, true);
-    /*
-    List<Medication> medsList = await Persistence.loadData();
 
-    // Find the index of the existing medication
-    int index = medsList.indexWhere((med) => med.name == widget.med?.name);
-
-    // If the medication exists, delete it
-    if (index != -1) {
-      // Delete the existing medication
-      medsList.removeAt(index);
-    }
-
-    await Persistence.saveData(medsList);
-    */
     Navigator.pop(context);
   }
 
