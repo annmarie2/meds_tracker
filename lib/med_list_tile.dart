@@ -6,8 +6,9 @@ import 'package:intl/src/intl/date_format.dart';
 class MedListTile extends StatelessWidget {
   final Medication med;
   final VoidCallback onEdit;
+  final VoidCallback onTaken;
 
-  MedListTile({required this.med, required this.onEdit});
+  MedListTile({required this.med, required this.onEdit, required this.onTaken});
 
   @override
   Widget build(BuildContext context) {
@@ -38,6 +39,10 @@ class MedListTile extends StatelessWidget {
                 Text('Next Dose: ${DateFormat('MMMM d, yyyy - h:mm a').format(med.lastTriggered.add(med.interval))}'), // TODO: Calculate when the next dose will be and display it here
               ],
             ),
+            IconButton(
+              icon: Icon(Icons.medication),
+              onPressed: onTaken
+            )
           ],
         ),
       ),

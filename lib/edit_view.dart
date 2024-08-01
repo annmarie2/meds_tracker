@@ -3,13 +3,14 @@ import 'package:meds_tracker/main.dart';
 import 'package:provider/provider.dart';
 import 'models/medication.dart';
 import 'package:intl/intl.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'access/persistence.dart';
 import 'dart:convert';
 
 class EditView extends StatefulWidget {
   Medication? med;
+  MedicationCallback? onMedicationChanged;
 
-  EditView({required this.med});
+  EditView({required this.med, required this.onMedicationChanged});
 
   @override
   State<EditView> createState() => _EditViewState();
@@ -45,50 +46,30 @@ class _EditViewState extends State<EditView> {
 
     if (hours != null) {
       setState(() {
-        widget.med = Medication(
-          name: name,
-          lastTriggered: lastTriggered,
-          interval: Duration(minutes: (hours * 60).toInt()),
-          doAlarm: _alarm,
+        if (widget.med == null) {
+          widget.med = Medication(
+            name: name,
+            lastTriggered: lastTriggered,
+            interval: Duration(minutes: (hours * 60.0).toInt()),
+            doAlarm: _alarm,
           );
+        } else {
+          widget.med!.name = name;
+          widget.med!.lastTriggered = lastTriggered;
+          widget.med!.interval = Duration(minutes: (hours * 60.0).toInt());
+          widget.med!.doAlarm = _alarm;
+        }
+        widget.onMedicationChanged!(widget.med!, false);
       });
 
-      SharedPreferences prefs = await SharedPreferences.getInstance();
-      String? medsJson = prefs.getString('medications');
-      List<dynamic> medsList = medsJson != null ? jsonDecode(medsJson) : [];
-
-      // Find the index of the existing medication
-      int index = medsList.indexWhere((med) => med['name'] == oldName);
-      print("index is $index");
-
-      if (index != -1) {
-        // Replace the existing medication
-        medsList[index] = widget.med?.toJson();
-      } else {
-        // Add the new medication if it doesn't exist
-        medsList.add(widget.med?.toJson());
-      }
-
-      await prefs.setString('medications', jsonEncode(medsList));
       Navigator.pop(context);
     }
   }
 
   Future<void> _delete() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    String? medsJson = prefs.getString('medications');
-    List<dynamic> medsList = medsJson != null ? jsonDecode(medsJson) : [];
 
-    // Find the index of the existing medication
-    int index = medsList.indexWhere((med) => med['name'] == widget.med?.name);
+    widget.onMedicationChanged!(widget.med!, true);
 
-    // If the medication exists, delete it
-    if (index != -1) {
-      // Delete the existing medication
-      medsList.removeAt(index);
-    }
-
-    await prefs.setString('medications', jsonEncode(medsList));
     Navigator.pop(context);
   }
 

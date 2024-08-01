@@ -5,7 +5,7 @@ import 'med_list_tile.dart';
 import 'edit_view.dart';
 import 'models/medication.dart';
 import 'details_view.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'access/persistence.dart';
 import 'dart:convert';
 
 void main() {
@@ -43,12 +43,28 @@ class MainAppState extends ChangeNotifier {
     _loadMeds();
   }
 
+  void updateMedication(Medication med, bool delete) async {
+    bool isNew = !(meds.any((m) => m.id == med.id));
+    if (isNew) {
+      meds.add(med);
+    }
+    else {
+      var x = meds.firstWhere((m) => m.id == med.id);
+      x.name = med.name;
+      x.lastTriggered = med.lastTriggered;
+      x.interval = med.interval;
+      x.doAlarm = med.doAlarm;
+    }
+    if (delete) {
+      meds.removeWhere((m) => m.id == med.id);
+    }
+    await Persistence.saveData(meds);
+  }
+
   Future<void> _loadMeds() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    String? medsJson = prefs.getString('medications');
-    if (medsJson != null) {
-      List<dynamic> medsList = jsonDecode(medsJson);
-      meds = medsList.map((med) => Medication.fromJson(med)).toList();
+    List<Medication> medsList = await Persistence.loadData();
+    if (medsList.isNotEmpty) {
+      meds = medsList.map((med) => med).toList();
     } else {
       // Default value if no data is found
       meds = [
@@ -99,9 +115,13 @@ body: ListView(
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) => EditView(med: med),
+                  builder: (context) => EditView(med: med, onMedicationChanged: appState.updateMedication),
                 ),
               );
+            },
+            onTaken: () {
+              med.lastTriggered = DateTime.now();
+              appState.updateMedication(med, false);
             },
           );
         }).toList(),
@@ -111,7 +131,7 @@ body: ListView(
           Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (context) => EditView(med: null),
+              builder: (context) => EditView(med: null, onMedicationChanged: appState.updateMedication),
             ),
           );
         },
