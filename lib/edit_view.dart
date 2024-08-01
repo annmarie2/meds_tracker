@@ -2,23 +2,165 @@ import 'package:flutter/material.dart';
 import 'package:meds_tracker/main.dart';
 import 'package:provider/provider.dart';
 import 'models/medication.dart';
+import 'package:intl/intl.dart';
+import 'access/persistence.dart';
+import 'dart:convert';
 
-class EditView extends StatelessWidget {
-  final Medication med;
+class EditView extends StatefulWidget {
+  Medication? med;
+  MedicationCallback? onMedicationChanged;
 
-  EditView({required this.med});
+  EditView({required this.med, required this.onMedicationChanged});
+
+  @override
+  State<EditView> createState() => _EditViewState();
+}
+
+class _EditViewState extends State<EditView> {
+  late TextEditingController _durationController;
+  late bool _alarm;
+  late TextEditingController _lastTriggeredController;
+  late TextEditingController _nameController;
+
+  @override
+  void initState() {
+    super.initState();
+
+    _nameController = TextEditingController(
+      text: widget.med?.name ?? 'New Medication',
+    );
+    _durationController = TextEditingController(
+      text: ((widget.med?.interval.inMinutes ?? 60) / 60).toStringAsFixed(2),
+    );
+    _alarm = widget.med?.doAlarm ?? false;
+    _lastTriggeredController = TextEditingController(
+      text: DateFormat('MMMM d, yyyy - h:mm a').format(widget.med?.lastTriggered ?? DateTime.now()),
+    );
+  }
+
+  Future<void> _save() async {
+    double? hours = double.tryParse(_durationController.text);
+    DateTime? lastTriggered = DateFormat('MMMM d, yyyy - h:mm a').parse(_lastTriggeredController.text);
+    String? name = _nameController.text;
+    String? oldName = widget.med?.name;
+
+    if (hours != null) {
+      setState(() {
+        if (widget.med == null) {
+          widget.med = Medication(
+            name: name,
+            lastTriggered: lastTriggered,
+            interval: Duration(minutes: (hours * 60.0).toInt()),
+            doAlarm: _alarm,
+          );
+        } else {
+          widget.med!.name = name;
+          widget.med!.lastTriggered = lastTriggered;
+          widget.med!.interval = Duration(minutes: (hours * 60.0).toInt());
+          widget.med!.doAlarm = _alarm;
+        }
+        widget.onMedicationChanged!(widget.med!, false);
+      });
+
+      Navigator.pop(context);
+    }
+  }
+
+  Future<void> _delete() async {
+
+    widget.onMedicationChanged!(widget.med!, true);
+
+    Navigator.pop(context);
+  }
 
   @override 
   Widget build(BuildContext context) {
-    var appState = context.watch<MainAppState>();
-
+    // var appState = context.watch<MainAppState>();
     return Scaffold(
       appBar: AppBar(
         title: Text('Edit Medication'),
       ),
       body: Column(
         children: [
-          
+          IntrinsicWidth(
+            child: TextFormField(
+              controller: _nameController,
+              decoration: InputDecoration(
+                border: OutlineInputBorder(),
+              ),
+              style: TextStyle(
+                fontSize: 24.0,
+              ),
+              onChanged: (value) {},
+            ),
+          ),
+          SizedBox(height: 20),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text("Period: "),
+              SizedBox(width: 10), // Add some space between the text and the input field
+              IntrinsicWidth(
+                child: TextFormField(
+                  controller: _durationController,
+                  decoration: InputDecoration(
+                    border: OutlineInputBorder(),
+                  ),
+                  onChanged: (value) {},
+                ),
+              ),
+              SizedBox(width: 10),
+              Text('hours'),
+            ],
+          ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text('Last time taken: '),
+              SizedBox(width: 10),
+              IntrinsicWidth(
+                child: TextFormField(
+                  controller: _lastTriggeredController,
+                  // initialValue: DateFormat('MMMM d, yyyy - h:mm a').format(widget.med.lastTriggered), // Display the time in a human-readable format                  
+                  decoration: InputDecoration(
+                    border: OutlineInputBorder(),
+                  ),
+                  onChanged: (value) {
+                    // TODO: Handle changes to the input field if necessary
+                  },
+                ),
+              ),
+            ],
+          ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text('Alarm: '),
+              SizedBox(width: 10),
+              Checkbox(
+                value: _alarm,
+                onChanged: (bool? value) {
+                  // TODO: Handle changes to the checkbox if necessary
+                  setState(() {
+                    _alarm = value ?? false;
+                  });
+                },
+              ),
+            ],
+          ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              ElevatedButton(
+                onPressed: _save,
+                child: Text('Save'),
+              ),
+              ElevatedButton(
+                onPressed: _delete,
+                child: Text('Delete'),
+              ),
+            ],
+          ),
         ],
       ),
     );
