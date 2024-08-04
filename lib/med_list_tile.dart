@@ -17,33 +17,54 @@ class MedListTile extends StatelessWidget {
     var timeUntilNextDose = nextDose.difference(now);
     final theme = Theme.of(context);
 
-    return Align(
-      alignment: Alignment.centerLeft,
-      child: Container(
-        decoration: BoxDecoration(
-          color: (timeUntilNextDose < Duration.zero) ? theme.colorScheme.primary : Colors.grey[200],
-          borderRadius: BorderRadius.circular(12),
-        ),
-        padding: const EdgeInsets.all(8.0), // Add some padding for better appearance
-        child: Row(
-          mainAxisSize: MainAxisSize.min, // Ensure the Row takes up only as much space as needed
-          children: [
-            IconButton(
-              icon: Icon(Icons.edit),
-              onPressed: onEdit,
+    return Center(
+      child: IntrinsicWidth(
+        child: Padding(
+          padding: const EdgeInsets.only(top: 20.0),
+          child: Container(
+            decoration: BoxDecoration(
+              color: (timeUntilNextDose < Duration.zero) ? theme.colorScheme.primary : theme.colorScheme.surface,
+              borderRadius: BorderRadius.circular(12),
             ),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+            padding: const EdgeInsets.all(15.0), // Add some padding for better appearance
+            child: Column(
               children: [
-                Text(med.name),
-                Text('Next Dose: ${DateFormat('MMMM d, yyyy - h:mm a').format(med.lastTriggered.add(med.interval))}'), // TODO: Calculate when the next dose will be and display it here
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    IconButton(
+                      icon: Icon(Icons.edit),
+                      onPressed: onEdit,
+                      color: (timeUntilNextDose < Duration.zero) ? theme.colorScheme.onPrimary : theme.colorScheme.onSurface,
+                    ),
+                    Center(
+                      child: Text(
+                        med.name,
+                        style: theme.textTheme.titleLarge?.copyWith(
+                          color: (timeUntilNextDose < Duration.zero) ? theme.colorScheme.onPrimary : theme.colorScheme.onSurface,
+                        ),
+                      ),
+                    ),
+                    IconButton(
+                      icon: Icon(Icons.medication),
+                      onPressed: onTaken,
+                      color: (timeUntilNextDose < Duration.zero) ? theme.colorScheme.onPrimary : theme.colorScheme.onSurface,
+                    ),
+            
+                  ],
+                ),
+                SizedBox(
+                  height: 20.0,
+                ),
+                Text(
+                  'Next Dose: ${DateFormat('MMM d, yyyy - h:mm a').format(med.lastTriggered.add(med.interval))}',
+                  style: TextStyle(
+                    color: (timeUntilNextDose < Duration.zero) ? theme.colorScheme.onPrimary : theme.colorScheme.onSurface,
+                  ),
+                ),
               ],
             ),
-            IconButton(
-              icon: Icon(Icons.medication),
-              onPressed: onTaken
-            )
-          ],
+          ),
         ),
       ),
     );
