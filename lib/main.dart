@@ -1,3 +1,4 @@
+import 'package:alarm/alarm.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:provider/provider.dart';
@@ -7,6 +8,8 @@ import 'models/medication.dart';
 import 'details_view.dart';
 import 'access/persistence.dart';
 import 'dart:convert';
+import 'access/alarm_manager.dart';
+import 'ring.dart';
 
 void main() {
   runApp(ChangeNotifierProvider(
@@ -24,7 +27,7 @@ class MainApp extends StatelessWidget {
     return ChangeNotifierProvider(
       create: (context) => MainAppState(),
       child: MaterialApp(
-        title: 'Namer App',
+        title: 'Meds App',
         theme: ThemeData(
           useMaterial3: true,
           colorScheme: ColorScheme.fromSeed(
@@ -32,6 +35,7 @@ class MainApp extends StatelessWidget {
           ),
         ),
         home: HomePage(),
+        navigatorKey: navigatorKey,
       ),
     );
   }
@@ -39,9 +43,12 @@ class MainApp extends StatelessWidget {
 
 class MainAppState extends ChangeNotifier {
   var meds = <Medication>[];
+  List<AlarmSettings> _alarms = []; // alarms are stored in main.dart
+  List<AlarmSettings> get alarms => _alarms;
 
   MainAppState() {
     _loadMeds();
+    AlarmManager().init(_navigateToRingScreen);
   }
 
   void updateMedication(Medication med, bool delete) async {
@@ -70,8 +77,46 @@ class MainAppState extends ChangeNotifier {
       meds = [];
     }
     notifyListeners();
+    _loadAlarmsFromMeds();
+  }
+
+  Future<void> _navigateToRingScreen(AlarmSettings alarmSettings) async {
+    // Use the current context from the nearest BuildContext
+    var context = navigatorKey.currentContext;
+    if (context != null) {
+      await Navigator.push(
+        context,
+        MaterialPageRoute<void>(
+          builder: (context) => ExampleAlarmRingScreen(alarmSettings: alarmSettings),
+        ),
+      );
+      _loadAlarms();
+    }
+  }
+
+  void _loadAlarmsFromMeds() {
+    for (Medication med in meds) {
+      if (med.doAlarm == true) {
+        AlarmSettings alarm = AlarmSettings(
+          id: UniqueKey().hashCode,
+          dateTime: med.lastTriggered.add(med.interval),
+          notificationTitle: med.name,
+          notificationBody: 'Time to take your medication!',
+          assetAudioPath: 'assets/audio/alarm.wav',
+        );
+        _alarms.add(alarm);
+      }
+    }
+    AlarmManager().setAlarms(_alarms);
+  }
+
+  void _loadAlarms() {
+    _alarms = AlarmManager().getAlarms();
+    notifyListeners();
   }
 }
+
+final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>(); // TODO: DO THIS WITHOUT A GLOBAL KEY!!
 
 class HomePage extends StatefulWidget {
   @override
@@ -101,11 +146,11 @@ class _HomePageState extends State<HomePage> {
       ),
       body: ListView(
         children: appState.meds.isEmpty
-            ? [
-                Center(
-                  child: Text('No medications yet.'),
-                ),
-              ]
+          ? [
+              Center(
+                child: Text('No medications yet.'),
+              ),
+            ]
       : appState.meds.map((med) {
           return MedListTile(
             med: med,
