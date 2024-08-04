@@ -20,14 +20,16 @@ class MainApp extends StatelessWidget {
   const MainApp({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context) {    
     return ChangeNotifierProvider(
       create: (context) => MainAppState(),
       child: MaterialApp(
         title: 'Namer App',
         theme: ThemeData(
           useMaterial3: true,
-          colorScheme: ColorScheme.fromSeed(seedColor: Colors.orange),
+          colorScheme: ColorScheme.fromSeed(
+            seedColor: Colors.deepOrange,
+          ),
         ),
         home: HomePage(),
       ),
@@ -36,7 +38,6 @@ class MainApp extends StatelessWidget {
 }
 
 class MainAppState extends ChangeNotifier {
-  // TODO: Change this to a persisted list, instead of a hardcoded one
   var meds = <Medication>[];
 
   MainAppState() {
@@ -66,10 +67,7 @@ class MainAppState extends ChangeNotifier {
     if (medsList.isNotEmpty) {
       meds = medsList.map((med) => med).toList();
     } else {
-      // Default value if no data is found
-      meds = [
-        // Medication(name: "Tylenol", lastTriggered: DateTime.now(), interval: Duration(days: 1), doAlarm: true),
-      ];
+      meds = [];
     }
     notifyListeners();
   }
@@ -91,23 +89,23 @@ class _HomePageState extends State<HomePage> {
   Widget build(BuildContext context) {
     var appState = context.watch<MainAppState>();
 
-    // if (appState.meds.isEmpty) {
-    //   return Center(
-    //     child: Text('No medications yet.'),
-    //   );
-    // }
-
     return Scaffold(
       appBar: AppBar(
-        title: Text('Medications'),
-      ),
-body: ListView(
-  children: appState.meds.isEmpty
-      ? [
-          Center(
-            child: Text('No medications yet.'),
+        title: Text(
+          'Medications',
+          style: TextStyle(
+            color: Theme.of(context).colorScheme.onPrimary,
           ),
-        ]
+        ),
+        backgroundColor: Theme.of(context).colorScheme.primary,
+      ),
+      body: ListView(
+        children: appState.meds.isEmpty
+            ? [
+                Center(
+                  child: Text('No medications yet.'),
+                ),
+              ]
       : appState.meds.map((med) {
           return MedListTile(
             med: med,
