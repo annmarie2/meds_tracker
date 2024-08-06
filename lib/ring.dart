@@ -22,7 +22,7 @@ class ExampleAlarmRingScreen extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [
                 RawMaterialButton(
-                  onPressed: () {
+                  onPressed: () { // TODO: Get this to dismiss the alarm for this medicine
                     final now = DateTime.now();
                     Alarm.set(
                       alarmSettings: alarmSettings.copyWith(
@@ -37,17 +37,17 @@ class ExampleAlarmRingScreen extends StatelessWidget {
                     ).then((_) => Navigator.pop(context));
                   },
                   child: Text(
-                    'Snooze',
+                    'Ignore',
                     style: Theme.of(context).textTheme.titleLarge,
                   ),
                 ),
                 RawMaterialButton(
-                  onPressed: () {
+                  onPressed: () { // TODO: Get this to update the medicine status to taken
                     Alarm.stop(alarmSettings.id)
                         .then((_) => Navigator.pop(context));
                   },
                   child: Text(
-                    'Stop',
+                    'I took my medicine',
                     style: Theme.of(context).textTheme.titleLarge,
                   ),
                 ),

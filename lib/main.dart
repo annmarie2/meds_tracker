@@ -110,7 +110,7 @@ class MainAppState extends ChangeNotifier {
           id: med.id.hashCode, // Use medication ID to ensure unique alarms
           dateTime: med.lastTriggered.add(med.interval),
           notificationTitle: med.name,
-          notificationBody: 'Time to take your medication!',
+          notificationBody: 'Time to take your medication!', // TODO: Get this to navigate you to the alarm page when tapped
           assetAudioPath: 'assets/audio/alarm.wav',
         );
         _alarms.add(alarm);
@@ -118,7 +118,6 @@ class MainAppState extends ChangeNotifier {
     }
     await AlarmManager().setAlarms(_alarms);
     _loadAlarms();
-    print("your current alarms are: ${alarms}");
   }
 
   void _loadAlarms() {
