@@ -44,7 +44,7 @@ class MainApp extends StatelessWidget {
 class MainAppState extends ChangeNotifier {
   var meds = <Medication>[];
   List<AlarmSettings> _alarms = []; // alarms are stored in main.dart
-  List<AlarmSettings> get alarms => _alarms;
+  List<AlarmSettings> get alarms => _alarms; // TODO: is this line necessary??
 
   MainAppState() {
     _loadMeds();
@@ -77,7 +77,7 @@ class MainAppState extends ChangeNotifier {
       meds = [];
     }
     notifyListeners();
-    _loadAlarmsFromMeds();
+    _loadAlarmsFromMeds(); // TODO: IS THIS THE RIGHT PLACE FOR THIS?
   }
 
   Future<void> _navigateToRingScreen(AlarmSettings alarmSettings) async {
@@ -94,7 +94,7 @@ class MainAppState extends ChangeNotifier {
     }
   }
 
-  void _loadAlarmsFromMeds() {
+  Future<void> _loadAlarmsFromMeds() async {
     for (Medication med in meds) {
       if (med.doAlarm == true) {
         AlarmSettings alarm = AlarmSettings(
@@ -107,7 +107,9 @@ class MainAppState extends ChangeNotifier {
         _alarms.add(alarm);
       }
     }
-    AlarmManager().setAlarms(_alarms);
+    await AlarmManager().setAlarms(_alarms);
+    _loadAlarms();
+    print("your current alarms are: ${alarms}");
   }
 
   void _loadAlarms() {

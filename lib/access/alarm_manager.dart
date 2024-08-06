@@ -6,7 +6,7 @@ import 'package:permission_handler/permission_handler.dart';
 class AlarmManager {
   static final AlarmManager _instance = AlarmManager._internal();
   static StreamSubscription<AlarmSettings>? subscription;
-  late Function(AlarmSettings) onAlarmRing;
+  // late Function(AlarmSettings) onAlarmRing;
 
   factory AlarmManager() {
     return _instance;
@@ -15,15 +15,17 @@ class AlarmManager {
   AlarmManager._internal();
 
   Future<void> init(Function(AlarmSettings) alarmCallback) async {
-    onAlarmRing = alarmCallback;
+    // onAlarmRing = alarmCallback;
     await Alarm.init();
     if (Alarm.android) {
       await _checkAndroidNotificationPermission();
+      await _checkAndroidExternalStoragePermission();
       await _checkAndroidScheduleExactAlarmPermission();
     }
 
-    subscription ??= Alarm.ringStream.stream.listen((alarmSettings) {
-      onAlarmRing(alarmSettings);
+    subscription ??= Alarm.ringStream.stream.listen((alarmSettings) { // TODO: this is spamming callbacks. Find a better way to do this!!!
+        // Invoke the callback
+        alarmCallback(alarmSettings);
     });
   }
 
@@ -35,6 +37,17 @@ class AlarmManager {
     }
   }
 
+  Future<void> _checkAndroidExternalStoragePermission() async {
+  final status = await Permission.storage.status;
+  if (status.isDenied) {
+    alarmPrint('Requesting external storage permission...');
+    final res = await Permission.storage.request();
+    alarmPrint(
+      'External storage permission ${res.isGranted ? '' : 'not'} granted',
+    );
+  }
+}
+
   Future<void> _checkAndroidScheduleExactAlarmPermission() async {
     final status = await Permission.scheduleExactAlarm.status;
     if (status.isDenied) {
@@ -44,16 +57,13 @@ class AlarmManager {
   }
 
   Future<void> setAlarms(List<AlarmSettings> alarms) async {
-    // Clear all existing alarms
-    var existingAlarms = await Alarm.getAlarms();
-    for (var alarm in existingAlarms) {
-      await Alarm.stop(alarm.id);
-    }
+    var existingAlarms = getAlarms();
 
-    // Set new alarms
-    var alarmsCopy = List<AlarmSettings>.from(alarms);
-    for (var alarm in alarmsCopy) {
-      await Alarm.set(alarmSettings: alarm);
+    var alarmsCopy = List<AlarmSettings>.from(alarms); 
+    for (AlarmSettings alarm in alarmsCopy) {
+      if (!existingAlarms.contains(alarm)) {
+        await Alarm.set(alarmSettings: alarm);
+      }
     }
   }
 
