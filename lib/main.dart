@@ -45,6 +45,7 @@ class MainAppState extends ChangeNotifier {
   var meds = <Medication>[];
   List<AlarmSettings> _alarms = []; // alarms are stored in main.dart
   List<AlarmSettings> get alarms => _alarms; // TODO: is this line necessary??
+  final Set<int> processedAlarms = <int>{};
 
   MainAppState() {
     _loadMeds();
@@ -67,6 +68,7 @@ class MainAppState extends ChangeNotifier {
       meds.removeWhere((m) => m.id == med.id);
     }
     await Persistence.saveData(meds);
+    _loadAlarmsFromMeds(); // Ensure alarms are updated when medications change
   }
 
   Future<void> _loadMeds() async {
@@ -77,28 +79,35 @@ class MainAppState extends ChangeNotifier {
       meds = [];
     }
     notifyListeners();
-    _loadAlarmsFromMeds(); // TODO: IS THIS THE RIGHT PLACE FOR THIS?
+    _loadAlarmsFromMeds(); // Ensure alarms are loaded when medications are loaded
   }
 
   Future<void> _navigateToRingScreen(AlarmSettings alarmSettings) async {
-    // Use the current context from the nearest BuildContext
-    var context = navigatorKey.currentContext;
-    if (context != null) {
-      await Navigator.push(
-        context,
-        MaterialPageRoute<void>(
-          builder: (context) => ExampleAlarmRingScreen(alarmSettings: alarmSettings),
-        ),
-      );
-      _loadAlarms();
+    // Check if the alarm has already been processed
+    if (!processedAlarms.contains(alarmSettings.id)) {
+      // Add the alarm to the set of processed alarms
+      processedAlarms.add(alarmSettings.id);
+
+      // Use the current context from the nearest BuildContext
+      var context = navigatorKey.currentContext;
+      if (context != null) {
+        await Navigator.push(
+          context,
+          MaterialPageRoute<void>(
+            builder: (context) => ExampleAlarmRingScreen(alarmSettings: alarmSettings),
+          ),
+        );
+        _loadAlarms();
+      }
     }
   }
 
   Future<void> _loadAlarmsFromMeds() async {
+    _alarms.clear(); // Clear existing alarms to avoid duplicates
     for (Medication med in meds) {
       if (med.doAlarm == true) {
         AlarmSettings alarm = AlarmSettings(
-          id: UniqueKey().hashCode,
+          id: med.id.hashCode, // Use medication ID to ensure unique alarms
           dateTime: med.lastTriggered.add(med.interval),
           notificationTitle: med.name,
           notificationBody: 'Time to take your medication!',

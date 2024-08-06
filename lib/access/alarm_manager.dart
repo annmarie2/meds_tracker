@@ -6,7 +6,7 @@ import 'package:permission_handler/permission_handler.dart';
 class AlarmManager {
   static final AlarmManager _instance = AlarmManager._internal();
   static StreamSubscription<AlarmSettings>? subscription;
-  // late Function(AlarmSettings) onAlarmRing;
+  final Set<int> processedAlarms = <int>{};
 
   factory AlarmManager() {
     return _instance;
@@ -15,7 +15,6 @@ class AlarmManager {
   AlarmManager._internal();
 
   Future<void> init(Function(AlarmSettings) alarmCallback) async {
-    // onAlarmRing = alarmCallback;
     await Alarm.init();
     if (Alarm.android) {
       await _checkAndroidNotificationPermission();
@@ -23,9 +22,14 @@ class AlarmManager {
       await _checkAndroidScheduleExactAlarmPermission();
     }
 
-    subscription ??= Alarm.ringStream.stream.listen((alarmSettings) { // TODO: this is spamming callbacks. Find a better way to do this!!!
+    subscription ??= Alarm.ringStream.stream.listen((alarmSettings) {
+      // Check if the alarm has already been processed
+      if (!processedAlarms.contains(alarmSettings.id)) {
         // Invoke the callback
         alarmCallback(alarmSettings);
+        // Add the alarm to the set of processed alarms
+        processedAlarms.add(alarmSettings.id);
+      }
     });
   }
 
@@ -38,15 +42,15 @@ class AlarmManager {
   }
 
   Future<void> _checkAndroidExternalStoragePermission() async {
-  final status = await Permission.storage.status;
-  if (status.isDenied) {
-    alarmPrint('Requesting external storage permission...');
-    final res = await Permission.storage.request();
-    alarmPrint(
-      'External storage permission ${res.isGranted ? '' : 'not'} granted',
-    );
+    final status = await Permission.storage.status;
+    if (status.isDenied) {
+      alarmPrint('Requesting external storage permission...');
+      final res = await Permission.storage.request();
+      alarmPrint(
+        'External storage permission ${res.isGranted ? '' : 'not'} granted',
+      );
+    }
   }
-}
 
   Future<void> _checkAndroidScheduleExactAlarmPermission() async {
     final status = await Permission.scheduleExactAlarm.status;
