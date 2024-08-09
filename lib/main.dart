@@ -151,6 +151,7 @@ class MainAppState extends ChangeNotifier {
         _alarms.add(alarm);
       }
     }
+    // await AlarmManager().stopAll();
     await AlarmManager().setAlarms(_alarms);
     _loadAlarms();
   }

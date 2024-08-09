@@ -69,6 +69,13 @@ class AlarmManager {
         await Alarm.set(alarmSettings: alarm);
       }
     }
+
+    // remove any alarms that have been deleted client-side
+    for (AlarmSettings existingAlarm in existingAlarms) {
+      if (!alarms.contains(existingAlarm)) {
+        await Alarm.stop(existingAlarm.id);
+      }
+    }
   }
 
   Future<void> stopAlarm(int id) async {
