@@ -8,8 +8,9 @@ class Medication {
   DateTime lastTriggered;
   Duration interval;
   bool doAlarm;
+  bool snooze;
 
-  Medication({required this.name, required this.lastTriggered, required this.interval, this.doAlarm = false, String? id}) {
+  Medication({required this.name, required this.lastTriggered, required this.interval, this.doAlarm = false, this.snooze = false, String? id}) {
     this.id = id ?? Uuid().v4();
   }
 
@@ -19,6 +20,7 @@ class Medication {
     'lastTriggered': lastTriggered.toIso8601String(),
     'interval': interval.inMinutes,
     'doAlarm': doAlarm,
+    'snooze': false,
   };
 
   factory Medication.fromJson(Map<String, dynamic> json) {
@@ -27,6 +29,7 @@ class Medication {
       lastTriggered: DateTime.parse(json['lastTriggered']),
       interval: Duration(minutes: json['interval']),
       doAlarm: json['doAlarm'] ?? false, // Default to false if null
+      snooze: json['snooze'] ?? false, // Default to false if null
       id: json['id'] ?? Uuid().v4(),
     );
   }

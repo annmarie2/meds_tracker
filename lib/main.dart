@@ -46,6 +46,7 @@ class MainAppState extends ChangeNotifier {
   List<AlarmSettings> _alarms = []; // alarms are stored in main.dart
   List<AlarmSettings> get alarms => _alarms; // TODO: is this line necessary??
   final Set<int> processedAlarms = <int>{};
+  final Duration snoozeTime = Duration(minutes: 3);
 
   MainAppState() {
     _loadMeds();
@@ -63,6 +64,7 @@ class MainAppState extends ChangeNotifier {
       x.lastTriggered = med.lastTriggered;
       x.interval = med.interval;
       x.doAlarm = med.doAlarm;
+      x.snooze = med.snooze;
     }
     if (delete) {
       meds.removeWhere((m) => m.id == med.id);
@@ -71,13 +73,30 @@ class MainAppState extends ChangeNotifier {
     _loadAlarmsFromMeds(); // Ensure alarms are updated when medications change
   }
 
-  void updateMedicationStatus(String medicationName) async {
-    Medication? med = meds.firstWhere((m) => m.name == medicationName);
+  void updateMedicationStatus(String medicationName, bool change) async {
+    Medication? med;
+    try {
+      med = meds.firstWhere((m) => m.name == medicationName);
+    } catch (e) {
+      med = null;
+    }
 
     if (med != null) {
-      med.lastTriggered = DateTime.now();
+      if (change) {
+        med.snooze = false; // Ensure that snooze is false when medication is taken
+
+        med.lastTriggered = DateTime.now();
+      } else {
+        med.snooze = true;
+      }
       await Persistence.saveData(meds);
       _loadAlarmsFromMeds(); // Ensure alarms are updated when medications change
+    } else {
+      for (AlarmSettings alarm in _alarms) {
+        if (alarm.notificationTitle == medicationName) {
+          AlarmManager().stopAlarm(alarm.id);
+        }
+      }
     }
   }
 
@@ -107,6 +126,7 @@ class MainAppState extends ChangeNotifier {
             builder: (context) => ExampleAlarmRingScreen(
               alarmSettings: alarmSettings,
               updateMedicationStatus: updateMedicationStatus,
+              snoozeTime: snoozeTime,
             ),
           ),
         );
@@ -118,10 +138,12 @@ class MainAppState extends ChangeNotifier {
   Future<void> _loadAlarmsFromMeds() async {
     _alarms.clear(); // Clear existing alarms to avoid duplicates
     for (Medication med in meds) {
-      if (med.doAlarm == true) {
+      if (med.doAlarm == true && 
+          (med.snooze == false || // TODO: CHECK AND UPDATE SNOOZE STATUSE SOMEWHERE ELSE!
+          (med.snooze == true && med.lastTriggered.add(med.interval).add(snoozeTime).isBefore(DateTime.now())))) {
         AlarmSettings alarm = AlarmSettings(
           id: med.id.hashCode, // Use medication ID to ensure unique alarms
-          dateTime: med.lastTriggered.add(med.interval),
+          dateTime: med.snooze == false ? med.lastTriggered.add(med.interval) : med.lastTriggered.add(med.interval).add(snoozeTime),
           notificationTitle: med.name,
           notificationBody: 'Time to take your medication!', // TODO: Get this to navigate you to the alarm page when tapped
           assetAudioPath: 'assets/audio/alarm.wav',

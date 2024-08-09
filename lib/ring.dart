@@ -1,11 +1,13 @@
 import 'package:alarm/alarm.dart';
 import 'package:flutter/material.dart';
+import 'models/medication.dart';
 
 class ExampleAlarmRingScreen extends StatelessWidget {
   final AlarmSettings alarmSettings;
-  final Function(String) updateMedicationStatus;
+  final Function(String, bool) updateMedicationStatus;
+  final Duration snoozeTime;
 
-  ExampleAlarmRingScreen({required this.alarmSettings, required this.updateMedicationStatus, super.key});
+  ExampleAlarmRingScreen({required this.alarmSettings, required this.updateMedicationStatus, required this.snoozeTime, super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -15,7 +17,7 @@ class ExampleAlarmRingScreen extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.spaceAround,
           children: [
             Text(
-              'You alarm (${alarmSettings.id}) is ringing...',
+              'You alarm for ${alarmSettings.notificationTitle} is ringing...',
               style: Theme.of(context).textTheme.titleLarge,
             ),
             const Text('🔔', style: TextStyle(fontSize: 50)),
@@ -23,29 +25,19 @@ class ExampleAlarmRingScreen extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [
                 RawMaterialButton(
-                  onPressed: () { // TODO: Get this to dismiss the alarm for this medicine
-                    final now = DateTime.now();
-                    Alarm.set(
-                      alarmSettings: alarmSettings.copyWith(
-                        dateTime: DateTime(
-                          now.year,
-                          now.month,
-                          now.day,
-                          now.hour,
-                          now.minute,
-                        ).add(const Duration(minutes: 1)),
-                      ),
-                    ).then((_) => Navigator.pop(context));
+                  onPressed: () {
+                    updateMedicationStatus(alarmSettings.notificationTitle, false);
+                    Navigator.pop(context);
                   },
                   child: Text(
-                    'Ignore',
+                    'Snooze',
                     style: Theme.of(context).textTheme.titleLarge,
                   ),
                 ),
                 RawMaterialButton(
-                  onPressed: () { // TODO: Get this to update the medicine status to taken
-                    updateMedicationStatus(alarmSettings.notificationTitle);
-                    Alarm.stop(alarmSettings.id).then((_) => Navigator.pop(context));
+                  onPressed: () {
+                    updateMedicationStatus(alarmSettings.notificationTitle, true);
+                    Navigator.pop(context);
                   },
                   child: Text(
                     'I took my medicine',
