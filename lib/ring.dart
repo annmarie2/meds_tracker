@@ -2,9 +2,10 @@ import 'package:alarm/alarm.dart';
 import 'package:flutter/material.dart';
 
 class ExampleAlarmRingScreen extends StatelessWidget {
-  const ExampleAlarmRingScreen({required this.alarmSettings, super.key});
-
   final AlarmSettings alarmSettings;
+  final Function(String) updateMedicationStatus;
+
+  ExampleAlarmRingScreen({required this.alarmSettings, required this.updateMedicationStatus, super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -43,8 +44,8 @@ class ExampleAlarmRingScreen extends StatelessWidget {
                 ),
                 RawMaterialButton(
                   onPressed: () { // TODO: Get this to update the medicine status to taken
-                    Alarm.stop(alarmSettings.id)
-                        .then((_) => Navigator.pop(context));
+                    updateMedicationStatus(alarmSettings.notificationTitle);
+                    Alarm.stop(alarmSettings.id).then((_) => Navigator.pop(context));
                   },
                   child: Text(
                     'I took my medicine',

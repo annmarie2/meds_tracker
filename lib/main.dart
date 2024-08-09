@@ -71,6 +71,16 @@ class MainAppState extends ChangeNotifier {
     _loadAlarmsFromMeds(); // Ensure alarms are updated when medications change
   }
 
+  void updateMedicationStatus(String medicationName) async {
+    Medication? med = meds.firstWhere((m) => m.name == medicationName);
+
+    if (med != null) {
+      med.lastTriggered = DateTime.now();
+      await Persistence.saveData(meds);
+      _loadAlarmsFromMeds(); // Ensure alarms are updated when medications change
+    }
+  }
+
   Future<void> _loadMeds() async {
     List<Medication> medsList = await Persistence.loadData();
     if (medsList.isNotEmpty) {
@@ -93,8 +103,11 @@ class MainAppState extends ChangeNotifier {
       if (context != null) {
         await Navigator.push(
           context,
-          MaterialPageRoute<void>(
-            builder: (context) => ExampleAlarmRingScreen(alarmSettings: alarmSettings),
+          MaterialPageRoute(
+            builder: (context) => ExampleAlarmRingScreen(
+              alarmSettings: alarmSettings,
+              updateMedicationStatus: updateMedicationStatus,
+            ),
           ),
         );
         _loadAlarms();
