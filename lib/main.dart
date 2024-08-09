@@ -84,10 +84,11 @@ class MainAppState extends ChangeNotifier {
     if (med != null) {
       if (change) {
         med.snooze = false; // Ensure that snooze is false when medication is taken
-
         med.lastTriggered = DateTime.now();
       } else {
         med.snooze = true;
+        print("alarm id is: ${med.id.hashCode}");
+        AlarmManager().stopAlarm(med.id.hashCode);
       }
       await Persistence.saveData(meds);
       _loadAlarmsFromMeds(); // Ensure alarms are updated when medications change
