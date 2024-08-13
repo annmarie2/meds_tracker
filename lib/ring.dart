@@ -4,7 +4,7 @@ import 'models/medication.dart';
 
 class ExampleAlarmRingScreen extends StatelessWidget {
   final AlarmSettings alarmSettings;
-  final Function(String, bool) updateMedicationStatus;
+  final Function(AlarmSettings, bool) updateMedicationStatus;
   final Duration snoozeTime;
 
   ExampleAlarmRingScreen({required this.alarmSettings, required this.updateMedicationStatus, required this.snoozeTime, super.key});
@@ -26,7 +26,7 @@ class ExampleAlarmRingScreen extends StatelessWidget {
               children: [
                 RawMaterialButton(
                   onPressed: () {
-                    updateMedicationStatus(alarmSettings.notificationTitle, false);
+                    updateMedicationStatus(alarmSettings, false);
                     Navigator.pop(context);
                   },
                   child: Text(
@@ -36,7 +36,7 @@ class ExampleAlarmRingScreen extends StatelessWidget {
                 ),
                 RawMaterialButton(
                   onPressed: () {
-                    updateMedicationStatus(alarmSettings.notificationTitle, true);
+                    updateMedicationStatus(alarmSettings, true);
                     Navigator.pop(context);
                   },
                   child: Text(

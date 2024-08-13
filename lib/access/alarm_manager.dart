@@ -2,11 +2,13 @@ import 'package:alarm/alarm.dart';
 import 'dart:async';
 import 'dart:io';
 import 'package:permission_handler/permission_handler.dart';
+import '../models/medication.dart';
 
 class AlarmManager {
   static final AlarmManager _instance = AlarmManager._internal();
   static StreamSubscription<AlarmSettings>? subscription;
   final Set<int> processedAlarms = <int>{};
+  final Duration snoozeTime = Duration(minutes: 3);
 
   factory AlarmManager() {
     return _instance;
@@ -63,23 +65,26 @@ class AlarmManager {
   Future<void> setAlarms(List<AlarmSettings> alarms) async {
     var existingAlarms = getAlarms();
 
-    var alarmsCopy = List<AlarmSettings>.from(alarms); 
-    for (AlarmSettings alarm in alarmsCopy) {
-      if (!existingAlarms.contains(alarm)) {
-        await Alarm.set(alarmSettings: alarm);
-      }
+    // Stop all alarms first to avoid overlaps and re-triggering issues
+    for (AlarmSettings existingAlarm in existingAlarms) {
+        await Alarm.stop(existingAlarm.id);
     }
 
-    // remove any alarms that have been deleted client-side
-    for (AlarmSettings existingAlarm in existingAlarms) {
-      if (!alarms.contains(existingAlarm)) {
-        await Alarm.stop(existingAlarm.id);
-      }
+    // Set new alarms
+    for (AlarmSettings alarm in alarms) {
+        await Alarm.set(alarmSettings: alarm);
     }
+
+    // Clear processed alarms to avoid interference with newly set alarms
+    processedAlarms.clear();
   }
 
   Future<void> stopAlarm(int id) async {
     await Alarm.stop(id);
+  }
+
+  Future<void> stopAllAlarms() async {
+    await Alarm.stopAll();
   }
 
   List<AlarmSettings> getAlarms() {

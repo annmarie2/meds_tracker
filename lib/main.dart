@@ -43,10 +43,6 @@ class MainApp extends StatelessWidget {
 
 class MainAppState extends ChangeNotifier {
   var meds = <Medication>[];
-  List<AlarmSettings> _alarms = []; // alarms are stored in main.dart
-  List<AlarmSettings> get alarms => _alarms; // TODO: is this line necessary??
-  final Set<int> processedAlarms = <int>{};
-  final Duration snoozeTime = Duration(minutes: 3);
 
   MainAppState() {
     _loadMeds();
@@ -73,10 +69,10 @@ class MainAppState extends ChangeNotifier {
     _loadAlarmsFromMeds(); // Ensure alarms are updated when medications change
   }
 
-  void updateMedicationStatus(String medicationName, bool change) async {
+  void updateMedicationStatus(AlarmSettings alarmSettings, bool change) async {
     Medication? med;
     try {
-      med = meds.firstWhere((m) => m.name == medicationName);
+      med = meds.firstWhere((m) => m.name == alarmSettings.notificationTitle);
     } catch (e) {
       med = null;
     }
@@ -86,15 +82,25 @@ class MainAppState extends ChangeNotifier {
         med.snooze = false; // Ensure that snooze is false when medication is taken
         med.lastTriggered = DateTime.now();
       } else {
+        await AlarmManager().stopAlarm(alarmSettings.id); // stop the current alarm
         med.snooze = true;
-        print("alarm id is: ${med.id.hashCode}");
-        AlarmManager().stopAlarm(med.id.hashCode);
       }
+
+      // Find the index of the med in the meds list and update it
+      int index = meds.indexWhere((m) => m.id == med?.id);
+      if (index != -1) {
+        meds[index] = med;
+      }
+
+      print("med is: $med");
       await Persistence.saveData(meds);
+      print("meds is: $meds");
+      
+      // TODO: does this not cancel the alarm that is currently going for the snoozed alarm though? I think not...
       _loadAlarmsFromMeds(); // Ensure alarms are updated when medications change
     } else {
       for (AlarmSettings alarm in _alarms) {
-        if (alarm.notificationTitle == medicationName) {
+        if (alarm.notificationTitle == alarmSettings.notificationTitle) {
           AlarmManager().stopAlarm(alarm.id);
         }
       }
@@ -113,11 +119,6 @@ class MainAppState extends ChangeNotifier {
   }
 
   Future<void> _navigateToRingScreen(AlarmSettings alarmSettings) async {
-    // Check if the alarm has already been processed
-    if (!processedAlarms.contains(alarmSettings.id)) {
-      // Add the alarm to the set of processed alarms
-      processedAlarms.add(alarmSettings.id);
-
       // Use the current context from the nearest BuildContext
       var context = navigatorKey.currentContext;
       if (context != null) {
@@ -133,15 +134,19 @@ class MainAppState extends ChangeNotifier {
         );
         _loadAlarms();
       }
-    }
+    // }
   }
 
   Future<void> _loadAlarmsFromMeds() async {
     _alarms.clear(); // Clear existing alarms to avoid duplicates
     for (Medication med in meds) {
-      if (med.doAlarm == true && 
-          (med.snooze == false || // TODO: CHECK AND UPDATE SNOOZE STATUSE SOMEWHERE ELSE!
-          (med.snooze == true && med.lastTriggered.add(med.interval).add(snoozeTime).isBefore(DateTime.now())))) {
+      if ((med.doAlarm == true && 
+        ((med.snooze == false && 
+        med.lastTriggered.add(med.interval).isBefore(DateTime.now())) || 
+        (med.snooze == true && 
+        med.lastTriggered.add(snoozeTime + med.interval).isBefore(DateTime.now()))))) {
+        
+        // set the alarm
         AlarmSettings alarm = AlarmSettings(
           id: med.id.hashCode, // Use medication ID to ensure unique alarms
           dateTime: med.snooze == false ? med.lastTriggered.add(med.interval) : med.lastTriggered.add(med.interval).add(snoozeTime),
@@ -152,7 +157,7 @@ class MainAppState extends ChangeNotifier {
         _alarms.add(alarm);
       }
     }
-    // await AlarmManager().stopAll();
+
     await AlarmManager().setAlarms(_alarms);
     _loadAlarms();
   }
