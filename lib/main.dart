@@ -154,14 +154,31 @@ class _HomePageState extends State<HomePage> {
         ),
         backgroundColor: Theme.of(context).colorScheme.primary,
       ),
-      body: ListView(
-        children: appState.meds.isEmpty
-          ? [
-              Center(
-                child: Text('No medications yet.'),
+      body: appState.meds.isEmpty ? Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Text(
+              'No medications yet.',
+              style: TextStyle(
+                fontSize: Theme.of(context).textTheme.titleLarge?.fontSize,
+                color: Theme.of(context).colorScheme.primary,
               ),
-            ]
-      : appState.meds.map((med) {
+            ),
+            Text(
+              'Add one to get started!',
+              style: TextStyle(
+                fontSize: Theme.of(context).textTheme.titleLarge?.fontSize,
+                color: Theme.of(context).colorScheme.primary,
+              ),
+            ),
+
+          ],
+        ),
+      )
+      : ListView(
+        children: appState.meds.map((med) {
           return MedListTile(
             med: med,
             onEdit: () {
