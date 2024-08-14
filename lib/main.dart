@@ -46,7 +46,7 @@ class MainAppState extends ChangeNotifier {
     AlarmManager().init(_navigateToRingScreen);
   }
 
-  void updateMedication(Medication med, bool delete) async {
+  void updateMedication(Medication med, bool delete) async {    
     bool isNew = !(meds.any((m) => m.id == med.id));
     if (isNew) {
       meds.add(med);

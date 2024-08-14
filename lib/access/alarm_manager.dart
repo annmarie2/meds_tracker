@@ -123,7 +123,19 @@ class AlarmManager {
 
   Future<void> updateAlarm(Medication med, bool delete) async {
     var alarms = getAlarms();
-    var alarm = alarms.firstWhere((alarm) => alarm.notificationTitle == med.name);
+    var alarm = null;
+
+    // TODO: this won't work for alarms with the same name. Make med names unique.
+    for (AlarmSettings existingAlarm in alarms) {
+      if (existingAlarm.notificationTitle == med.name) {
+        alarm = existingAlarm;
+      }
+    }
+
+    if (alarm == null) {
+      createAlarms([med]);
+      return;
+    }
 
     await Alarm.stop(alarm.id);
     if (delete == false) {
