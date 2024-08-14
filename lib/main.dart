@@ -66,7 +66,9 @@ class MainAppState extends ChangeNotifier {
       meds.removeWhere((m) => m.id == med.id);
     }
     await Persistence.saveData(meds);
-    await AlarmManager().updateAlarm(med, delete);
+    if (med.doAlarm) {
+      await AlarmManager().updateAlarm(med, delete);
+    }
   }
 
   void updateMedicationStatus(AlarmSettings alarmSettings, bool change) async {
@@ -92,7 +94,9 @@ class MainAppState extends ChangeNotifier {
       }
 
       await Persistence.saveData(meds);
-      await AlarmManager().updateAlarmStatus(med);
+      if (med.doAlarm) {
+        await AlarmManager().updateAlarmStatus(med);
+      }
     }
   }
 
@@ -189,7 +193,6 @@ class _HomePageState extends State<HomePage> {
         },
         child: Icon(Icons.add),
         shape: CircleBorder(),
-        // TODO: Add background color based on theme :)
       ),
     );
   }
