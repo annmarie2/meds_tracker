@@ -8,7 +8,7 @@ class AlarmManager {
   static final AlarmManager _instance = AlarmManager._internal();
   static StreamSubscription<AlarmSettings>? subscription;
   final Set<int> processedAlarms = <int>{};
-  final Duration snoozeTime = Duration(minutes: 3);
+  final Duration snoozeTime = Duration(minutes: 10);
 
   factory AlarmManager() {
     return _instance;
@@ -76,22 +76,6 @@ class AlarmManager {
         );
         alarms.add(alarm);
       }
-      // if ((med.doAlarm == true && 
-      // ((med.snooze == false &&
-      // med.lastTriggered.add(med.interval).isBefore(DateTime.now())) ||
-      // (med.snooze == true &&
-      // med.lastTriggered.add(snoozeTime + med.interval).isBefore(DateTime.now()))))) {
-
-      //   // set the alarm
-      //   AlarmSettings alarm = AlarmSettings(
-      //     id: med.id.hashCode, // Use medication ID to ensure unique alarms
-      //     dateTime: med.snooze == false ? med.lastTriggered.add(med.interval) : med.lastTriggered.add(med.interval).add(snoozeTime),
-      //     notificationTitle: med.name,
-      //     notificationBody: 'Time to take your medication!',
-      //     assetAudioPath: 'assets/audio/alarm.wav',
-      //   );
-      //   alarms.add(alarm);
-      // }
     }
     await setAlarms(alarms);
   }

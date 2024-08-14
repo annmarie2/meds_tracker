@@ -30,7 +30,7 @@ class ExampleAlarmRingScreen extends StatelessWidget {
                     Navigator.pop(context);
                   },
                   child: Text(
-                    'Snooze',
+                    'Snooze for ${snoozeTime.inMinutes} minutes',
                     style: Theme.of(context).textTheme.titleLarge,
                   ),
                 ),
