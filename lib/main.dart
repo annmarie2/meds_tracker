@@ -1,13 +1,10 @@
 import 'package:alarm/alarm.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart';
 import 'package:provider/provider.dart';
 import 'med_list_tile.dart';
 import 'edit_view.dart';
 import 'models/medication.dart';
-import 'details_view.dart';
 import 'access/persistence.dart';
-import 'dart:convert';
 import 'access/alarm_manager.dart';
 import 'ring.dart';
 
@@ -191,8 +188,8 @@ class _HomePageState extends State<HomePage> {
             ),
           );
         },
-        child: Icon(Icons.add),
         shape: CircleBorder(),
+        child: Icon(Icons.add),
       ),
     );
   }

@@ -1,10 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:meds_tracker/main.dart';
-import 'package:provider/provider.dart';
 import 'models/medication.dart';
 import 'package:intl/intl.dart';
-import 'access/persistence.dart';
-import 'dart:convert';
 
 class EditView extends StatefulWidget {
   Medication? med;
@@ -42,7 +38,6 @@ class _EditViewState extends State<EditView> {
     double? hours = double.tryParse(_durationController.text);
     DateTime? lastTriggered = DateFormat('MMMM d, yyyy - h:mm a').parse(_lastTriggeredController.text);
     String? name = _nameController.text;
-    String? oldName = widget.med?.name;
 
     if (hours != null) {
       setState(() {
