@@ -27,7 +27,7 @@ class AlarmRingScreen extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
               Text(
-                'Time to take ${alarmSettings.notificationTitle}!',
+                'Time to take \n${alarmSettings.notificationTitle}!',
                 style: Theme.of(context).textTheme.titleLarge,
               ),
               const Text('🔔', style: TextStyle(fontSize: 50)),
