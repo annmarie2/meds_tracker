@@ -1,3 +1,4 @@
+import 'package:alarm/alarm.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:provider/provider.dart';
@@ -7,6 +8,8 @@ import 'models/medication.dart';
 import 'details_view.dart';
 import 'access/persistence.dart';
 import 'dart:convert';
+import 'access/alarm_manager.dart';
+import 'ring.dart';
 
 void main() {
   runApp(ChangeNotifierProvider(
@@ -24,7 +27,7 @@ class MainApp extends StatelessWidget {
     return ChangeNotifierProvider(
       create: (context) => MainAppState(),
       child: MaterialApp(
-        title: 'Namer App',
+        title: 'Meds App',
         theme: ThemeData(
           useMaterial3: true,
           colorScheme: ColorScheme.fromSeed(
@@ -32,6 +35,7 @@ class MainApp extends StatelessWidget {
           ),
         ),
         home: HomePage(),
+        navigatorKey: navigatorKey,
       ),
     );
   }
@@ -42,6 +46,7 @@ class MainAppState extends ChangeNotifier {
 
   MainAppState() {
     _loadMeds();
+    AlarmManager().init(_navigateToRingScreen);
   }
 
   void updateMedication(Medication med, bool delete) async {
@@ -55,11 +60,44 @@ class MainAppState extends ChangeNotifier {
       x.lastTriggered = med.lastTriggered;
       x.interval = med.interval;
       x.doAlarm = med.doAlarm;
+      x.snooze = med.snooze;
     }
     if (delete) {
       meds.removeWhere((m) => m.id == med.id);
     }
     await Persistence.saveData(meds);
+    if (med.doAlarm) {
+      await AlarmManager().updateAlarm(med, delete);
+    }
+  }
+
+  void updateMedicationStatus(AlarmSettings alarmSettings, bool change) async {
+    Medication? med;
+    try {
+      med = meds.firstWhere((m) => m.name == alarmSettings.notificationTitle);
+    } catch (e) {
+      med = null;
+    }
+
+    if (med != null) {
+      if (change) {
+        med.snooze = false; // Ensure that snooze is false when medication is taken
+        med.lastTriggered = DateTime.now();
+      } else {
+        med.snooze = true;
+      }
+
+      // Find the index of the med in the meds list and update it
+      int index = meds.indexWhere((m) => m.id == med?.id);
+      if (index != -1) {
+        meds[index] = med;
+      }
+
+      await Persistence.saveData(meds);
+      if (med.doAlarm) {
+        await AlarmManager().updateAlarmStatus(med);
+      }
+    }
   }
 
   Future<void> _loadMeds() async {
@@ -70,8 +108,28 @@ class MainAppState extends ChangeNotifier {
       meds = [];
     }
     notifyListeners();
+    AlarmManager().createAlarms(meds);
+  }
+
+  Future<void> _navigateToRingScreen(AlarmSettings alarmSettings, Duration snoozeTime) async {
+      // Use the current context from the nearest BuildContext
+      var context = navigatorKey.currentContext;
+      if (context != null) {
+        await Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => AlarmRingScreen(
+              alarmSettings: alarmSettings,
+              updateMedicationStatus: updateMedicationStatus,
+              snoozeTime: snoozeTime,
+            ),
+          ),
+        );
+      }
   }
 }
+
+final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>(); // TODO: DO THIS WITHOUT A GLOBAL KEY!!
 
 class HomePage extends StatefulWidget {
   @override
@@ -101,11 +159,11 @@ class _HomePageState extends State<HomePage> {
       ),
       body: ListView(
         children: appState.meds.isEmpty
-            ? [
-                Center(
-                  child: Text('No medications yet.'),
-                ),
-              ]
+          ? [
+              Center(
+                child: Text('No medications yet.'),
+              ),
+            ]
       : appState.meds.map((med) {
           return MedListTile(
             med: med,
@@ -135,7 +193,6 @@ class _HomePageState extends State<HomePage> {
         },
         child: Icon(Icons.add),
         shape: CircleBorder(),
-        // TODO: Add background color based on theme :)
       ),
     );
   }

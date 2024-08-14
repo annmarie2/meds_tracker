@@ -2,51 +2,57 @@ import 'package:flutter/material.dart';
 import 'package:meds_tracker/main.dart';
 import 'package:provider/provider.dart';
 import 'models/medication.dart';
+import 'package:alarm/alarm.dart';
 
 class DetailsView extends StatelessWidget {
-  final Medication med;
+  final AlarmSettings alarmSettings;
+  final Function(AlarmSettings, bool) updateMedicationStatus;
+  final Duration snoozeTime;
 
-  DetailsView({required this.med});
+  DetailsView({required this.alarmSettings, required this.updateMedicationStatus, required this.snoozeTime, super.key});
 
   @override 
   Widget build(BuildContext context) {
-    var appState = context.watch<MainAppState>();
-
     return Scaffold(
       appBar: AppBar(
-        title: Text('Medication Details'),
+        title: Text('Alarm'),
       ),
-      body: Column(
-        children: [
-          Text(med.name),
-          Text('Next Dose:'),
-          Text('[time of dose]'), // TODO: Calculate when the next dose will be and display it here (as a time, e.g. 3:00 PM)
-          ElevatedButton(
-            onPressed: () {
-              // TODO: Update the medication's lastTriggered to now
-            },
-            child: Text('I took my meds'),
-          ),
-          Center(
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
+      body: SafeArea(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.spaceAround,
+          children: [
+            Text(
+              'You alarm for ${alarmSettings.notificationTitle} is ringing...',
+              style: Theme.of(context).textTheme.titleLarge,
+            ),
+            const Text('🔔', style: TextStyle(fontSize: 50)),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [
-                ElevatedButton(
+                RawMaterialButton(
                   onPressed: () {
-                    // TODO: Snooze the alarm for 5 minutes
+                    updateMedicationStatus(alarmSettings, false);
+                    Navigator.pop(context);
                   },
-                  child: Text('Snooze 5 min'),
+                  child: Text(
+                    'Snooze for ${snoozeTime.inMinutes} minutes',
+                    style: Theme.of(context).textTheme.titleLarge,
+                  ),
                 ),
-                ElevatedButton(
+                RawMaterialButton(
                   onPressed: () {
-                    // TODO: Skip (the alarm, I reckon)
+                    updateMedicationStatus(alarmSettings, true);
+                    Navigator.pop(context);
                   },
-                  child: Text('Skip'),
+                  child: Text(
+                    'I took my medicine',
+                    style: Theme.of(context).textTheme.titleLarge,
+                  ),
                 ),
               ],
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
