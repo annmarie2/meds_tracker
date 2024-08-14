@@ -70,6 +70,7 @@ class AlarmManager {
         AlarmSettings alarm = AlarmSettings(
           id: med.id.hashCode, // Use medication ID to ensure unique alarms
           dateTime: med.snooze == false ? med.lastTriggered.add(med.interval) : med.lastTriggered.add(med.interval).add(snoozeTime),
+          vibrate: true, // TODO: Vibrate isn't working; fix that
           notificationTitle: med.name,
           notificationBody: 'Time to take your medication!',
           assetAudioPath: 'assets/audio/alarm.wav',
@@ -140,9 +141,11 @@ class AlarmManager {
     await Alarm.stop(alarm.id);
     if (delete == false) {
       // set the alarm
+      // TODO: prolly should just call createAlarms()
       AlarmSettings alarm = AlarmSettings(
         id: med.id.hashCode, // Use medication ID to ensure unique alarms
         dateTime: med.snooze == false ? med.lastTriggered.add(med.interval) : med.lastTriggered.add(med.interval).add(snoozeTime),
+        vibrate: true,
         notificationTitle: med.name,
         notificationBody: 'Time to take your medication!',
         assetAudioPath: 'assets/audio/alarm.wav',
