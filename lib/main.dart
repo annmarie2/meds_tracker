@@ -114,7 +114,7 @@ class MainAppState extends ChangeNotifier {
         await Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (context) => ExampleAlarmRingScreen(
+            builder: (context) => AlarmRingScreen(
               alarmSettings: alarmSettings,
               updateMedicationStatus: updateMedicationStatus,
               snoozeTime: snoozeTime,
