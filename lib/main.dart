@@ -66,7 +66,7 @@ class MainAppState extends ChangeNotifier {
       meds.removeWhere((m) => m.id == med.id);
     }
     await Persistence.saveData(meds);
-    _loadAlarmsFromMeds(); // Ensure alarms are updated when medications change
+    await AlarmManager().updateAlarm(med, delete);
   }
 
   void updateMedicationStatus(AlarmSettings alarmSettings, bool change) async {
@@ -82,7 +82,6 @@ class MainAppState extends ChangeNotifier {
         med.snooze = false; // Ensure that snooze is false when medication is taken
         med.lastTriggered = DateTime.now();
       } else {
-        await AlarmManager().stopAlarm(alarmSettings.id); // stop the current alarm
         med.snooze = true;
       }
 
@@ -92,18 +91,8 @@ class MainAppState extends ChangeNotifier {
         meds[index] = med;
       }
 
-      print("med is: $med");
       await Persistence.saveData(meds);
-      print("meds is: $meds");
-      
-      // TODO: does this not cancel the alarm that is currently going for the snoozed alarm though? I think not...
-      _loadAlarmsFromMeds(); // Ensure alarms are updated when medications change
-    } else {
-      for (AlarmSettings alarm in _alarms) {
-        if (alarm.notificationTitle == alarmSettings.notificationTitle) {
-          AlarmManager().stopAlarm(alarm.id);
-        }
-      }
+      await AlarmManager().updateAlarmStatus(med);
     }
   }
 
@@ -115,10 +104,10 @@ class MainAppState extends ChangeNotifier {
       meds = [];
     }
     notifyListeners();
-    _loadAlarmsFromMeds(); // Ensure alarms are loaded when medications are loaded
+    AlarmManager().createAlarms(meds);
   }
 
-  Future<void> _navigateToRingScreen(AlarmSettings alarmSettings) async {
+  Future<void> _navigateToRingScreen(AlarmSettings alarmSettings, Duration snoozeTime) async {
       // Use the current context from the nearest BuildContext
       var context = navigatorKey.currentContext;
       if (context != null) {
@@ -132,39 +121,7 @@ class MainAppState extends ChangeNotifier {
             ),
           ),
         );
-        _loadAlarms();
       }
-    // }
-  }
-
-  Future<void> _loadAlarmsFromMeds() async {
-    _alarms.clear(); // Clear existing alarms to avoid duplicates
-    for (Medication med in meds) {
-      if ((med.doAlarm == true && 
-        ((med.snooze == false && 
-        med.lastTriggered.add(med.interval).isBefore(DateTime.now())) || 
-        (med.snooze == true && 
-        med.lastTriggered.add(snoozeTime + med.interval).isBefore(DateTime.now()))))) {
-        
-        // set the alarm
-        AlarmSettings alarm = AlarmSettings(
-          id: med.id.hashCode, // Use medication ID to ensure unique alarms
-          dateTime: med.snooze == false ? med.lastTriggered.add(med.interval) : med.lastTriggered.add(med.interval).add(snoozeTime),
-          notificationTitle: med.name,
-          notificationBody: 'Time to take your medication!', // TODO: Get this to navigate you to the alarm page when tapped
-          assetAudioPath: 'assets/audio/alarm.wav',
-        );
-        _alarms.add(alarm);
-      }
-    }
-
-    await AlarmManager().setAlarms(_alarms);
-    _loadAlarms();
-  }
-
-  void _loadAlarms() {
-    _alarms = AlarmManager().getAlarms();
-    notifyListeners();
   }
 }
 

@@ -16,7 +16,7 @@ class AlarmManager {
 
   AlarmManager._internal();
 
-  Future<void> init(Function(AlarmSettings) alarmCallback) async {
+  Future<void> init(Function(AlarmSettings, Duration) alarmCallback) async {
     await Alarm.init();
     if (Alarm.android) {
       await _checkAndroidNotificationPermission();
@@ -28,7 +28,7 @@ class AlarmManager {
       // Check if the alarm has already been processed
       if (!processedAlarms.contains(alarmSettings.id)) {
         // Invoke the callback
-        alarmCallback(alarmSettings);
+        alarmCallback(alarmSettings, snoozeTime);
         // Add the alarm to the set of processed alarms
         processedAlarms.add(alarmSettings.id);
       }
@@ -62,34 +62,108 @@ class AlarmManager {
     }
   }
 
+  Future<void> createAlarms(List<Medication> meds) async {
+    List<AlarmSettings> alarms = [];
+    
+    for (Medication med in meds) {
+      if (med.doAlarm == true) {
+        AlarmSettings alarm = AlarmSettings(
+          id: med.id.hashCode, // Use medication ID to ensure unique alarms
+          dateTime: med.snooze == false ? med.lastTriggered.add(med.interval) : med.lastTriggered.add(med.interval).add(snoozeTime),
+          notificationTitle: med.name,
+          notificationBody: 'Time to take your medication!',
+          assetAudioPath: 'assets/audio/alarm.wav',
+        );
+        alarms.add(alarm);
+      }
+      // if ((med.doAlarm == true && 
+      // ((med.snooze == false &&
+      // med.lastTriggered.add(med.interval).isBefore(DateTime.now())) ||
+      // (med.snooze == true &&
+      // med.lastTriggered.add(snoozeTime + med.interval).isBefore(DateTime.now()))))) {
+
+      //   // set the alarm
+      //   AlarmSettings alarm = AlarmSettings(
+      //     id: med.id.hashCode, // Use medication ID to ensure unique alarms
+      //     dateTime: med.snooze == false ? med.lastTriggered.add(med.interval) : med.lastTriggered.add(med.interval).add(snoozeTime),
+      //     notificationTitle: med.name,
+      //     notificationBody: 'Time to take your medication!',
+      //     assetAudioPath: 'assets/audio/alarm.wav',
+      //   );
+      //   alarms.add(alarm);
+      // }
+    }
+    await setAlarms(alarms);
+  }
+
   Future<void> setAlarms(List<AlarmSettings> alarms) async {
     var existingAlarms = getAlarms();
 
-    // Stop all alarms first to avoid overlaps and re-triggering issues
-    for (AlarmSettings existingAlarm in existingAlarms) {
-        await Alarm.stop(existingAlarm.id);
-    }
-
-    // Set new alarms
+    // set any new alarms in the list (updating/deleting alarms happens elsewhere!)
     for (AlarmSettings alarm in alarms) {
+      // if that alarm already exists, do nothing. updating alarms will happen explicitely, otherwise we'd be re-setting alarms constantly :)
+      if (existingAlarms.any((existingAlarm) => existingAlarm.id == alarm.id)) {
+        // carry on
+      } else {
         await Alarm.set(alarmSettings: alarm);
+      }
     }
 
     // Clear processed alarms to avoid interference with newly set alarms
     processedAlarms.clear();
   }
 
-  Future<void> stopAlarm(int id) async {
-    await Alarm.stop(id);
+  Future<void> updateAlarmStatus(Medication med) async {
+    var alarms = getAlarms();
+    var alarm = alarms.firstWhere((alarm) => alarm.notificationTitle == med.name);
+    final now = DateTime.now();
+
+    if (med.snooze == true) {
+      // Snooze the alarm
+      Alarm.stop(alarm.id);
+      Alarm.set(
+        alarmSettings: alarm.copyWith(
+          dateTime: DateTime(
+            now.year,
+            now.month,
+            now.day,
+            now.hour,
+            now.minute,
+          ).add(snoozeTime),
+        ),
+      );
+    } else {
+      // Dismiss the alarm
+      Alarm.stop(alarm.id);
+    }
   }
 
-  Future<void> stopAllAlarms() async {
-    await Alarm.stopAll();
+  Future<void> updateAlarm(Medication med, bool delete) async {
+    var alarms = getAlarms();
+    var alarm = alarms.firstWhere((alarm) => alarm.notificationTitle == med.name);
+
+    await Alarm.stop(alarm.id);
+    if (delete == false) {
+      // set the alarm
+      AlarmSettings alarm = AlarmSettings(
+        id: med.id.hashCode, // Use medication ID to ensure unique alarms
+        dateTime: med.snooze == false ? med.lastTriggered.add(med.interval) : med.lastTriggered.add(med.interval).add(snoozeTime),
+        notificationTitle: med.name,
+        notificationBody: 'Time to take your medication!',
+        assetAudioPath: 'assets/audio/alarm.wav',
+      );
+      alarms.add(alarm);
+    }
   }
 
   List<AlarmSettings> getAlarms() {
-    var alarms = Alarm.getAlarms();
-    alarms.sort((a, b) => a.dateTime.isBefore(b.dateTime) ? 0 : 1);
+    List<AlarmSettings> alarms = [];
+    try {
+      alarms = Alarm.getAlarms();
+      alarms.sort((a, b) => a.dateTime.isBefore(b.dateTime) ? 0 : 1);
+    } on Exception catch (e) {
+      alarmPrint('Error getting alarms: $e');
+    }
     return alarms;
   }
 }
