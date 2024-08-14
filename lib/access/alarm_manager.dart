@@ -1,6 +1,5 @@
 import 'package:alarm/alarm.dart';
 import 'dart:async';
-import 'dart:io';
 import 'package:permission_handler/permission_handler.dart';
 import '../models/medication.dart';
 
@@ -19,6 +18,7 @@ class AlarmManager {
   Future<void> init(Function(AlarmSettings, Duration) alarmCallback) async {
     await Alarm.init();
     if (Alarm.android) {
+      // TODO: get the phone to vibrate, too
       await _checkAndroidNotificationPermission();
       await _checkAndroidExternalStoragePermission();
       await _checkAndroidScheduleExactAlarmPermission();
@@ -70,6 +70,7 @@ class AlarmManager {
         AlarmSettings alarm = AlarmSettings(
           id: med.id.hashCode, // Use medication ID to ensure unique alarms
           dateTime: med.snooze == false ? med.lastTriggered.add(med.interval) : med.lastTriggered.add(med.interval).add(snoozeTime),
+          vibrate: true, // TODO: Vibrate isn't working; fix that
           notificationTitle: med.name,
           notificationBody: 'Time to take your medication!',
           assetAudioPath: 'assets/audio/alarm.wav',
@@ -124,14 +125,27 @@ class AlarmManager {
 
   Future<void> updateAlarm(Medication med, bool delete) async {
     var alarms = getAlarms();
-    var alarm = alarms.firstWhere((alarm) => alarm.notificationTitle == med.name);
+    var alarm = null;
+
+    for (AlarmSettings existingAlarm in alarms) {
+      if (existingAlarm.notificationTitle == med.name) {
+        alarm = existingAlarm;
+      }
+    }
+
+    if (alarm == null) {
+      createAlarms([med]);
+      return;
+    }
 
     await Alarm.stop(alarm.id);
     if (delete == false) {
       // set the alarm
+      // TODO: prolly should just call createAlarms()
       AlarmSettings alarm = AlarmSettings(
         id: med.id.hashCode, // Use medication ID to ensure unique alarms
         dateTime: med.snooze == false ? med.lastTriggered.add(med.interval) : med.lastTriggered.add(med.interval).add(snoozeTime),
+        vibrate: true,
         notificationTitle: med.name,
         notificationBody: 'Time to take your medication!',
         assetAudioPath: 'assets/audio/alarm.wav',

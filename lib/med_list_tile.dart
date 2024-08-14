@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'models/medication.dart';
-import 'package:intl/src/intl/date_format.dart';
-
+import 'package:intl/intl.dart';
 
 class MedListTile extends StatelessWidget {
   final Medication med;

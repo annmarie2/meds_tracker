@@ -1,13 +1,10 @@
 import 'package:alarm/alarm.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart';
 import 'package:provider/provider.dart';
 import 'med_list_tile.dart';
 import 'edit_view.dart';
 import 'models/medication.dart';
-import 'details_view.dart';
 import 'access/persistence.dart';
-import 'dart:convert';
 import 'access/alarm_manager.dart';
 import 'ring.dart';
 
@@ -49,9 +46,15 @@ class MainAppState extends ChangeNotifier {
     AlarmManager().init(_navigateToRingScreen);
   }
 
-  void updateMedication(Medication med, bool delete) async {
+  void updateMedication(Medication med, bool delete) async {    
     bool isNew = !(meds.any((m) => m.id == med.id));
     if (isNew) {
+      // Don't add the medication if a medication with the same name already exists
+      for (Medication existingMedication in meds) {
+        if (existingMedication.name == med.name) {
+          return;
+        }
+      }
       meds.add(med);
     }
     else {
@@ -157,14 +160,31 @@ class _HomePageState extends State<HomePage> {
         ),
         backgroundColor: Theme.of(context).colorScheme.primary,
       ),
-      body: ListView(
-        children: appState.meds.isEmpty
-          ? [
-              Center(
-                child: Text('No medications yet.'),
+      body: appState.meds.isEmpty ? Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Text(
+              'No medications yet.',
+              style: TextStyle(
+                fontSize: Theme.of(context).textTheme.titleLarge?.fontSize,
+                color: Theme.of(context).colorScheme.primary,
               ),
-            ]
-      : appState.meds.map((med) {
+            ),
+            Text(
+              'Add one to get started!',
+              style: TextStyle(
+                fontSize: Theme.of(context).textTheme.titleLarge?.fontSize,
+                color: Theme.of(context).colorScheme.primary,
+              ),
+            ),
+
+          ],
+        ),
+      )
+      : ListView(
+        children: appState.meds.map((med) {
           return MedListTile(
             med: med,
             onEdit: () {
@@ -191,8 +211,8 @@ class _HomePageState extends State<HomePage> {
             ),
           );
         },
-        child: Icon(Icons.add),
         shape: CircleBorder(),
+        child: Icon(Icons.add),
       ),
     );
   }
