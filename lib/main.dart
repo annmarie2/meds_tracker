@@ -49,6 +49,12 @@ class MainAppState extends ChangeNotifier {
   void updateMedication(Medication med, bool delete) async {    
     bool isNew = !(meds.any((m) => m.id == med.id));
     if (isNew) {
+      // Don't add the medication if a medication with the same name already exists
+      for (Medication existingMedication in meds) {
+        if (existingMedication.name == med.name) {
+          return;
+        }
+      }
       meds.add(med);
     }
     else {

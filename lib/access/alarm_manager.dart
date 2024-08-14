@@ -18,6 +18,7 @@ class AlarmManager {
   Future<void> init(Function(AlarmSettings, Duration) alarmCallback) async {
     await Alarm.init();
     if (Alarm.android) {
+      // TODO: get the phone to vibrate, too
       await _checkAndroidNotificationPermission();
       await _checkAndroidExternalStoragePermission();
       await _checkAndroidScheduleExactAlarmPermission();
@@ -125,7 +126,6 @@ class AlarmManager {
     var alarms = getAlarms();
     var alarm = null;
 
-    // TODO: this won't work for alarms with the same name. Make med names unique.
     for (AlarmSettings existingAlarm in alarms) {
       if (existingAlarm.notificationTitle == med.name) {
         alarm = existingAlarm;
